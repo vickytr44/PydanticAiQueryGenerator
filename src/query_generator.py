@@ -7,7 +7,7 @@ from graphql import build_schema, parse, validate
 from graphql.error import GraphQLError
 
 query_agent = Agent(model, system_prompt=query_generation_prompt, model_settings={
-    "temperature": 0.3
+    "temperature": 0.3, "timeout": 30
 })
 
 # @query_agent.result_validator

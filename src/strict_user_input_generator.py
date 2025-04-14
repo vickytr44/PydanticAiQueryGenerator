@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pydantic_ai import Agent
 from model import model
 from pydantic import BaseModel, Field
@@ -7,6 +8,14 @@ from prompt import strict_user_input_prompt
 
 from pydantic_ai import Agent
 
+@dataclass
+class strict_user_input_result:
+    strict_user_input: str
+
+@dataclass
+class Complete_request_result:
+    complete_request: str
+
 class ReportRequest(BaseModel):
     main_entity: str = Field(description="Main entity to fetch data from")
     fields_to_fetch_from_main_entity: str = Field(description="Fields to fetch from the main entity")
@@ -15,7 +24,7 @@ class ReportRequest(BaseModel):
     related_entity_fields: Optional[Dict[str, str]] = Field(description="Related entities and their fields to fetch")
     sort_field_order: Optional[Dict[str, str]] = Field(description="Sort field and order")
 
-user_input_agent = Agent(model, system_prompt= strict_user_input_prompt, model_settings={ "temperature": 0.5})
+user_input_agent = Agent(model, result_type= strict_user_input_result, system_prompt= strict_user_input_prompt, model_settings={ "temperature": 0.5, "timeout": 30})
 
 @user_input_agent.tool_plain
 def generate_strict_user_input(report_request: ReportRequest) -> str:
