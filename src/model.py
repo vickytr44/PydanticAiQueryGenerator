@@ -1,7 +1,6 @@
 import os
 from openai import AsyncAzureOpenAI
 
-from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
@@ -16,7 +15,6 @@ client = AsyncAzureOpenAI(
 )
 
 model_name = os.getenv("MODEL_NAME")
-
 print("Model Name: ", model_name)
 
 model = OpenAIModel(

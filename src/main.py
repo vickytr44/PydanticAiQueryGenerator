@@ -21,7 +21,7 @@ while True:
     chat_history.append(ModelRequest(parts=[UserPromptPart(content=query)]))  # Add user message
 
     # Get AI response using history
-    user_request = user_input_agent.run_sync(query, message_history = chat_history).data
+    user_request = user_input_agent.run_sync(query, message_history = chat_history).data.strict_user_input
     complete_request = "\n### user request:\n" + user_request + " " + "\n### GraphQL Schema:\n" + bill_schema_graphql
 
     result = query_agent.run_sync(complete_request)  
