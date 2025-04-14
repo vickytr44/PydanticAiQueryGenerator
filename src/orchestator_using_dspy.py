@@ -1,8 +1,8 @@
 from pydantic_ai import Agent, RunContext
+from dto import ReportRequest
 from model import model
 from prompt import orchestrator_agent_dspy_prompt
-from strict_user_input_generator import user_input_agent, strict_user_input_result, Complete_request_result
-from query_generator_using_dspy import query_generator_model
+from signature_definition_using_dspy import query_generator_model, extract_report_request
 from bill_schema_graphql import bill_schema_graphql
 
 from pydantic_ai.messages import (
@@ -13,25 +13,25 @@ from pydantic_ai.messages import (
     UserPromptPart,
 )
 
-
 orchestrator_agent = Agent(model, system_prompt=orchestrator_agent_dspy_prompt, model_settings={
     "temperature": 0.4, "timeout": 30
 })
 
-@orchestrator_agent.tool
-def user_input_agent_tool(ctx: RunContext[str],user_input : str) -> list[str]:
+@orchestrator_agent.tool_plain
+def extract_report_request_tool(input : str) -> ReportRequest:
     """
-    Process user input using the user_input_agent to extract structured information.
+    Process user input to extract structured information.
     """
-    result = user_input_agent.run_sync(user_input, usage=ctx.usage).data
-    return result
+    print("Extracting report request...")
+    result = extract_report_request(user_input= input)
+    return result.report_request
 
 @orchestrator_agent.tool_plain
-def generate_query_tool(deps: strict_user_input_result) -> str:
+def generate_query_tool(deps: ReportRequest) -> str:
     """
-    Generate a GraphQL query based on completed request.
+    Generate a GraphQL query based on the ReportRequest object.
     """
-    result = query_generator_model(graphql_schema=bill_schema_graphql, request= deps.strict_user_input)
+    result = query_generator_model(graphql_schema=bill_schema_graphql, request= deps)
     return result.query
 
 
