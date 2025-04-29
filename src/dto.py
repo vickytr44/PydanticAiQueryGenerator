@@ -1,17 +1,17 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
+from typing import Any, List, Optional
 
 class OrCondition(BaseModel):
     entity: str = Field(description="Entity for the OR condition")
     field: str = Field(description="Field for the OR condition")
     operation: str = Field(description="Operation for the OR condition")
-    value: str = Field(description="Value for the OR condition")
+    value: Any = Field(description="Value for the OR condition")
 
 class AndCondition(BaseModel):
     entity: str = Field(description="Entity for the AND condition")
     field: str = Field(description="Field for the AND condition")
     operation: str = Field(description="Operation for the AND condition")
-    value: str = Field(description="Value for the AND condition")
+    value: Any = Field(description="Value for the AND condition")
 
 class RelatedEntity(BaseModel):
     entity: str = Field(description="Related entity name")

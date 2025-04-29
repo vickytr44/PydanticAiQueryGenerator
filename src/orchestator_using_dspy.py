@@ -1,10 +1,13 @@
 from typing import List
 from pydantic_ai import Agent, RunContext
+from QueryGeneratorModule import QueryGenerator
+from ReportRequestExtractorModule import ReportRequestExtractor
 from dto import ReportRequest
 from model import model
 from prompt import orchestrator_agent_dspy_prompt
-from signature_definition_using_dspy import query_generator_model, extract_report_request, query_validation_model, error_resolver_model
-from bill_schema_graphql import bill_schema_graphql
+from query_validator import validate_graphql_query
+from signature_definition_using_dspy import error_resolver_model
+from full_chema_graphql import full_schema
 
 from pydantic_ai.messages import (
     ModelMessage,
@@ -24,35 +27,42 @@ def extract_report_request_tool(input : str) -> ReportRequest:
     Process user input to extract structured information.
     """
     print("Extracting report request...")
-    result = extract_report_request(user_input= input)
+    extractor = ReportRequestExtractor()
+    result = extractor(
+        user_input= input,
+        graphQl_schema= full_schema
+    )
     return result.report_request
 
 @orchestrator_agent.tool_plain
-def generate_query_tool(user_request: ReportRequest) -> str:
+def generate_query_tool(report_request: ReportRequest) -> str:
     """
     Generate a GraphQL query based on the ReportRequest object.
     """
-    print("generating query...")
-    result = query_generator_model(graphql_schema=bill_schema_graphql, request= user_request)
+    print("generating query...", report_request)
+    query_model = QueryGenerator()
+    result = query_model(
+        graphql_schema= full_schema ,
+        request = report_request
+    )
     return result.query
 
 @orchestrator_agent.tool_plain
-def validate_query_tool(graphQl_query: str) -> List[str] | None:
+def validate_query_tool(graphQl_query: str) -> str | None:
     """
     validate the generated GraphQL query against the schema.
     """
-    print("validating query...")
-    result = query_validation_model(graphql_schema=bill_schema_graphql, graphql_query= graphQl_query)
-    print(result.validation_error)
-    return result.validation_error
+    print("validating query...", graphQl_query)
+    validation_error = validate_graphql_query(graphQl_query, full_schema)
+    return validation_error
 
 @orchestrator_agent.tool_plain
-def error_resolver_tool(graphQl_query: str, validation_error: List[str], user_request: ReportRequest) -> str:
+def error_resolver_tool(graphQl_query: str, validation_error: str, user_request: ReportRequest) -> str:
     """
     Resolve the validation errors and generate the correct graphQl query against the schema.
     """
-    print("Resolving errors...")
-    result = error_resolver_model(graphql_schema=bill_schema_graphql, request = user_request, validation_error = validation_error, initial_query= graphQl_query)
+    print("Resolving errors...", validation_error)
+    result = error_resolver_model(graphql_schema=full_schema, request = user_request, validation_error = validation_error, initial_query= graphQl_query)
     return result.query
 
 
