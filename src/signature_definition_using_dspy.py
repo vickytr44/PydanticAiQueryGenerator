@@ -1,5 +1,8 @@
+from typing import List
 import dspy
 import os
+
+import dspy.predict
 
 from bill_schema_graphql import bill_schema_graphql
 
@@ -23,7 +26,8 @@ lm = dspy.LM(
     model=f"azure/{model_name}",
     api_key=api_key,
     api_base=azure_endpoint,
-    api_version=version
+    api_version=version,
+    temperature=0.4,
 )
 
 dspy.settings.configure(lm=lm, trace=["Test"])
@@ -39,10 +43,28 @@ class QueryGenerationSignature(dspy.Signature):
     """Generate a GraphQL query based on schema and user request."""
     graphql_schema = dspy.InputField(desc="GraphQL schema definition")
     request = dspy.InputField(desc="User request for data", type=ReportRequest)
-    query = dspy.OutputField(desc="Generated GraphQL query")
-
+    query = dspy.OutputField(desc="The GraphQL query only, with no explanation or surrounding text.")
 
 query_generator_model = dspy.ChainOfThought(QueryGenerationSignature)
+
+class QueryValidationSignature(dspy.Signature):
+    """Validates the graphQl query against the schema"""
+    graphql_schema = dspy.InputField(desc="GraphQL schema definition")
+    graphql_query = dspy.InputField(desc="GraphQl query")
+    validation_error = dspy.OutputField(desc="validation errors. If there are no validation errors return None", type= List[str] | None)
+
+
+query_validation_model = dspy.ChainOfThought(QueryValidationSignature)
+
+class ErrorResolverSignature(dspy.Signature):
+    """Reslves the validation error and generates the correct GraphQL query based on schema."""
+    graphql_schema = dspy.InputField(desc="GraphQL schema definition")
+    request = dspy.InputField(desc="User request for data", type=ReportRequest)
+    validation_error = dspy.InputField(desc="Validation error", type= List[str])
+    initial_query = dspy.InputField(desc="GraphQL query that needs to be corrected")
+    query = dspy.OutputField(desc="The GraphQL query only, with no explanation or surrounding text.")
+
+error_resolver_model = dspy.ChainOfThought(ErrorResolverSignature)
 
 
 # schema_str = bill_schema_graphql
