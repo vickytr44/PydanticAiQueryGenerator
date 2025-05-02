@@ -2,6 +2,8 @@ from typing import List
 import dspy
 import os
 
+from graphql import GraphQLError
+
 from bill_schema_graphql import bill_schema_graphql
 from account_schema_graphql import account_schema_graphql
 
@@ -51,7 +53,7 @@ class ErrorResolverSignature(dspy.Signature):
     """Reslves the validation error and generates the correct GraphQL query based on schema."""
     graphql_schema = dspy.InputField(desc="GraphQL schema definition")
     request = dspy.InputField(desc="User request for data", type=ReportRequest)
-    validation_error = dspy.InputField(desc="Validation errors", type= str)
+    validation_error = dspy.InputField(desc="Validation errors", type= List[GraphQLError])
     initial_query = dspy.InputField(desc="GraphQL query that needs to be corrected")
     query = dspy.OutputField(desc="The GraphQL query only, with no explanation or surrounding text.")
 
