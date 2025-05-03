@@ -96,7 +96,7 @@ class ResolveError(BaseNode[State, None, str]):
 
 
 async def main():
-    state = State(input="get bill amount, duedate, number and month along with customer name and account number where amount is greater than 1000 and customer name starts with 'v' or account type is domestic")
+    state = State(input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic")
     query_generation_graph = Graph(nodes=(ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError))
     result = await query_generation_graph.run(ExtractReportReuest(), state=state)
     print(result.output)

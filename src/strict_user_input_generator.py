@@ -31,6 +31,7 @@ def generate_strict_user_input(report_request: ReportRequest) -> str:
     """
     Generate a strict, formatted user query based on structured report input including main entity, filters, and related fields.
     """
+    print("report request",report_request)
     or_condition_line = ""
     and_condition_line = ""
     sort_line = ""
@@ -73,3 +74,8 @@ def generate_strict_user_input(report_request: ReportRequest) -> str:
     user_input_strict = first_line + "\n" + or_condition_line + "\n" + and_condition_line + "\n" + include_fields_line + "\n" + sort_line
 
     return user_input_strict
+
+
+user_input = "get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
+
+print(user_input_agent.run_sync(user_input).data)

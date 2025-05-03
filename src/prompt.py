@@ -215,11 +215,13 @@ And the user request:
 {user_input}
 
 Generate a structured ReportRequest object capturing:
-- main entity
-- fields to fetch
-- filter conditions (and/or)
-- related entities and their fields
-- sort order
+- Identify the main entity the user wants to fetch
+- Identify which fields the user wants from that main entity.
+- Identify related entities and their fields requested.
+- Classify conditions into:
+    - AND conditions: all must be true
+    - OR conditions: any can be true
+- Classify sort orders if mentioned (optional).
 
 Return only the ReportRequest object in valid Python syntax.
 """
