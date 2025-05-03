@@ -1,5 +1,5 @@
 import dspy
-import bill_schema_graphql
+import Schema.bill_schema_graphql as bill_schema_graphql
 from dto import AndCondition, OrCondition, RelatedEntity, ReportRequest, SortCondition
 
 

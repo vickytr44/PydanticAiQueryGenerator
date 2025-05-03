@@ -2,7 +2,7 @@ from pydantic_ai import Agent, RunContext
 from model import model
 from prompt import orchestrator_agent_prompt
 from strict_user_input_generator import user_input_agent, strict_user_input_result, Complete_request_result
-from bill_schema_graphql import bill_schema_graphql
+from Schema.bill_schema_graphql import bill_schema_graphql
 from query_generator import query_agent
 
 from pydantic_ai.messages import (

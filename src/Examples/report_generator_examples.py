@@ -1,7 +1,7 @@
 import dspy
 
-from account_schema_graphql import account_schema_graphql
-from bill_schema_graphql import bill_schema_graphql
+from Schema.account_schema_graphql import account_schema_graphql
+from Schema.bill_schema_graphql import bill_schema_graphql
 from dto import AndCondition, RelatedEntity, ReportRequest
 
 extract_report_example1 = dspy.Example(

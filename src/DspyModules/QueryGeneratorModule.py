@@ -2,10 +2,10 @@ import os
 from dotenv import load_dotenv
 import dspy
 from dto import AndCondition, OrCondition, RelatedEntity, ReportRequest, SortCondition  
-from account_schema_graphql import account_schema_graphql
-from bill_schema_graphql import bill_schema_graphql
-from full_chema_graphql import full_schema
-from query_generator_examples import few_shot_example1, few_shot_example2
+from Schema.account_schema_graphql import account_schema_graphql
+from Schema.bill_schema_graphql import bill_schema_graphql
+from Schema.full_chema_graphql import full_schema
+from Examples.query_generator_examples import few_shot_example1, few_shot_example2
 
 load_dotenv(override=True)
 
@@ -55,29 +55,29 @@ class QueryGenerationSignature(dspy.Signature):
 
 
 
-query_model = QueryGenerator()
+# query_model = QueryGenerator()
 
-query_model.generator.examples = [few_shot_example1,few_shot_example2]
+# query_model.generator.examples = [few_shot_example1,few_shot_example2]
 
-report_request = ReportRequest(
-    main_entity='Bill',
-    fields_to_fetch_from_main_entity=['amount', 'dueDate', 'number', 'month'],
-    or_conditions=[
-        OrCondition(entity='Customer', field='name', operation='startsWith', value='v'),
-        OrCondition(entity='Account', field='type', operation='eq', value='DOMESTIC')
-    ],
-    and_conditions=[
-        AndCondition(entity='Bill', field='amount', operation='gt', value=500)
-    ],
-    related_entity_fields=[
-        RelatedEntity(entity='Customer', fields=['name'])
-    ],
-    sort_field_order=None
-)
+# report_request = ReportRequest(
+#     main_entity='Bill',
+#     fields_to_fetch_from_main_entity=['amount', 'dueDate', 'number', 'month'],
+#     or_conditions=[
+#         OrCondition(entity='Customer', field='name', operation='startsWith', value='v'),
+#         OrCondition(entity='Account', field='type', operation='eq', value='DOMESTIC')
+#     ],
+#     and_conditions=[
+#         AndCondition(entity='Bill', field='amount', operation='gt', value=500)
+#     ],
+#     related_entity_fields=[
+#         RelatedEntity(entity='Customer', fields=['name'])
+#     ],
+#     sort_field_order=None
+# )
 
-result = query_model(
-    graphql_schema= bill_schema_graphql ,
-    request = report_request
-)
+# result = query_model(
+#     graphql_schema= bill_schema_graphql ,
+#     request = report_request
+# )
 
-print(result.query)
+# print(result.query)

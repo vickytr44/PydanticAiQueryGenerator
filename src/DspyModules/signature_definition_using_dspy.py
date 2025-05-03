@@ -4,8 +4,8 @@ import os
 
 from graphql import GraphQLError
 
-from bill_schema_graphql import bill_schema_graphql
-from account_schema_graphql import account_schema_graphql
+from Schema.bill_schema_graphql import bill_schema_graphql
+from Schema.account_schema_graphql import account_schema_graphql
 
 from dotenv import load_dotenv
 

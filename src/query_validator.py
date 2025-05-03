@@ -1,7 +1,7 @@
 from typing import List
 from graphql import build_schema, parse, validate
 from graphql.error import GraphQLError
-from full_chema_graphql import full_schema
+from Schema.full_chema_graphql import full_schema
 
 def validate_graphql_query(query: str, schema_str: str):
     try:

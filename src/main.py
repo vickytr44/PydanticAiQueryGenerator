@@ -1,7 +1,7 @@
 from query_generator import query_agent
 
 from strict_user_input_generator import user_input_agent
-from bill_schema_graphql import bill_schema_graphql
+from Schema.bill_schema_graphql import bill_schema_graphql
 
 from pydantic_ai.messages import (
     ModelMessage,

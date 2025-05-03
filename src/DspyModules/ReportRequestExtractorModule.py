@@ -2,10 +2,10 @@ import os
 from dotenv import load_dotenv
 import dspy
 from dto import ReportRequest  
-from account_schema_graphql import account_schema_graphql
-from full_chema_graphql import full_schema
-from bill_schema_graphql import bill_schema_graphql
-from report_generator_examples import extract_report_examples
+from Schema.account_schema_graphql import account_schema_graphql
+from Schema.full_chema_graphql import full_schema
+from Schema.bill_schema_graphql import bill_schema_graphql
+from Examples.report_generator_examples import extract_report_examples
 from prompt import report_request_workflow_prompt
 
 

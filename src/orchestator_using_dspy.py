@@ -1,13 +1,13 @@
 from typing import List
 from pydantic_ai import Agent, RunContext
-from QueryGeneratorModule import QueryGenerator
-from ReportRequestExtractorModule import ReportRequestExtractor
+from DspyModules.QueryGeneratorModule import QueryGenerator
+from DspyModules.ReportRequestExtractorModule import ReportRequestExtractor
 from dto import ReportRequest
 from model import model
 from prompt import orchestrator_agent_dspy_prompt
 from query_validator import validate_graphql_query
-from signature_definition_using_dspy import error_resolver_model
-from full_chema_graphql import full_schema
+from DspyModules.signature_definition_using_dspy import error_resolver_model
+from Schema.full_chema_graphql import full_schema
 
 from pydantic_ai.messages import (
     ModelMessage,

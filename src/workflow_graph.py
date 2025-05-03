@@ -6,15 +6,15 @@ from typing import List
 
 from pydantic_graph import BaseNode, End, Graph, GraphRunContext
 
-from ErrorResolverModule import ErrorResolverModule
-from QueryGeneratorModule import QueryGenerator
-from ReportRequestExtractorModule import ReportRequestExtractor
+from DspyModules.ErrorResolverModule import ErrorResolverModule
+from DspyModules.QueryGeneratorModule import QueryGenerator
+from DspyModules.ReportRequestExtractorModule import ReportRequestExtractor
 from dto import ReportRequest
 from model import model
-from full_chema_graphql import full_schema
-from bill_schema_graphql import bill_schema_graphql
+from Schema.full_chema_graphql import full_schema
+from Schema.bill_schema_graphql import bill_schema_graphql
 from query_validator import validate_graphql_query_for_workflow
-from signature_definition_using_dspy import error_resolver_model, validation_model
+from DspyModules.signature_definition_using_dspy import error_resolver_model, validation_model
 from graphql.error import GraphQLError
 
 
@@ -96,7 +96,7 @@ class ResolveError(BaseNode[State, None, str]):
 
 
 async def main():
-    state = State(input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic")
+    state = State(input="get bill amount, duedate, number and month along with customer name and account number where amount is greater than 1000 and customer name starts with 'v' or account type is domestic")
     query_generation_graph = Graph(nodes=(ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError))
     result = await query_generation_graph.run(ExtractReportReuest(), state=state)
     print(result.output)

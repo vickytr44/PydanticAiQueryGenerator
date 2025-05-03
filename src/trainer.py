@@ -1,10 +1,10 @@
 import dspy
 from dspy.teleprompt import BootstrapFewShot
 
-import account_schema_graphql
-from bill_schema_graphql import bill_schema_graphql
+import Schema.account_schema_graphql as account_schema_graphql
+from Schema.bill_schema_graphql import bill_schema_graphql
 from dto import ReportRequest, AndCondition, OrCondition, RelatedEntity, SortCondition
-from signature_definition_using_dspy import extract_report_request
+from DspyModules.signature_definition_using_dspy import extract_report_request
     
 few_shot_example = dspy.Example(
     input={
