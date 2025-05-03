@@ -204,3 +204,22 @@ Important additional rules:
 - Always provide only the final valid GraphQL query, with no additional text or explanation.
 - If you are unable to fix validation errors after multiple attempts, ask the user for missing or incorrect information.
 """
+
+report_request_workflow_prompt = """
+Given the GraphQL schema:
+
+{graphql_schema}
+
+And the user request:
+
+{user_input}
+
+Generate a structured ReportRequest object capturing:
+- main entity
+- fields to fetch
+- filter conditions (and/or)
+- related entities and their fields
+- sort order
+
+Return only the ReportRequest object in valid Python syntax.
+"""

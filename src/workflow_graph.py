@@ -6,6 +6,7 @@ from typing import List
 
 from pydantic_graph import BaseNode, End, Graph, GraphRunContext
 
+from ErrorResolverModule import ErrorResolverModule
 from QueryGeneratorModule import QueryGenerator
 from ReportRequestExtractorModule import ReportRequestExtractor
 from dto import ReportRequest
@@ -78,10 +79,20 @@ class ResolveError(BaseNode[State, None, str]):
     validation_error: List[str]
 
     async def run(self, ctx: GraphRunContext[State]) -> validateGraphQlQuery:
-        result= error_resolver_model(graphql_schema=schema, request = self.user_request, validation_error = self.validation_error, initial_query= self.query_to_be_Resolved)
-        print("Generating query", result.query)
+        # result= error_resolver_model(graphql_schema=schema, request = self.user_request, validation_error = self.validation_error, initial_query= self.query_to_be_Resolved)
+
+        error_resolver = ErrorResolverModule()
+
+        corrected_query = error_resolver(
+            graphql_schema=schema,
+            request=self.user_request,
+            validation_error= self.validation_error,
+            initial_query= self.query_to_be_Resolved
+        )
+
+        print("Generating query", corrected_query.query)
         ctx.state.is_query_validated = False
-        return validateGraphQlQuery(user_request= self.user_request, query_to_be_validated= result.query)
+        return validateGraphQlQuery(user_request= self.user_request, query_to_be_validated= corrected_query.query)
 
 
 async def main():
