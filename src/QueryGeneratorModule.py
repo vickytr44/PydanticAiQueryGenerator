@@ -1,9 +1,11 @@
 import os
 from dotenv import load_dotenv
 import dspy
-from dto import AndCondition, OrCondition, RelatedEntity, ReportRequest  
+from dto import AndCondition, OrCondition, RelatedEntity, ReportRequest, SortCondition  
 from account_schema_graphql import account_schema_graphql
 from bill_schema_graphql import bill_schema_graphql
+from full_chema_graphql import full_schema
+from query_generator_examples import few_shot_example1, few_shot_example2
 
 load_dotenv(override=True)
 
@@ -26,11 +28,23 @@ dspy.settings.configure(lm=lm, trace=["Test"])
 class QueryGenerator(dspy.Module):
     def __init__(self):
         super().__init__()
+
         self.generator = dspy.ChainOfThought(QueryGenerationSignature)
 
+        self.generator.examples = [few_shot_example1, few_shot_example2]
+        
+        # self.generator.prompt_template = """
+        # GraphQL Schema:
+        # {graphql_schema}
+
+        # User Request:
+        # {request}
+
+        # Generate a valid GraphQL query matching the schema and request. Return only the query.
+        # """
+
     def forward(self, graphql_schema, request):
-        output = self.generator(graphql_schema=graphql_schema, request=request)
-        return dspy.Prediction(query=output.query)
+        return self.generator(graphql_schema=graphql_schema, request=request)
 
 
 class QueryGenerationSignature(dspy.Signature):
@@ -40,7 +54,10 @@ class QueryGenerationSignature(dspy.Signature):
     query : str = dspy.OutputField(desc="The GraphQL query only, with no explanation or surrounding text.")
 
 
+
 query_model = QueryGenerator()
+
+query_model.generator.examples = [few_shot_example1,few_shot_example2]
 
 report_request = ReportRequest(
     main_entity='Bill',
@@ -50,10 +67,10 @@ report_request = ReportRequest(
         OrCondition(entity='Account', field='type', operation='eq', value='DOMESTIC')
     ],
     and_conditions=[
-        AndCondition(entity='Bill', field='amount', operation='gt', value=1000)
+        AndCondition(entity='Bill', field='amount', operation='gt', value=500)
     ],
     related_entity_fields=[
-        RelatedEntity(entity='Customer', fields=['name', 'type'])
+        RelatedEntity(entity='Customer', fields=['name'])
     ],
     sort_field_order=None
 )

@@ -1,6 +1,7 @@
 from typing import List
 from graphql import build_schema, parse, validate
 from graphql.error import GraphQLError
+from full_chema_graphql import full_schema
 
 def validate_graphql_query(query: str, schema_str: str):
     try:
@@ -23,7 +24,7 @@ def validate_graphql_query(query: str, schema_str: str):
         return f"Error parsing or validating the query: {str(e)}"
     
 
-def validate_graphql_query_for_workflow(query: str, schema_str: str) -> List[GraphQLError] | None:
+def validate_graphql_query_for_workflow(query: str, schema_str: str) -> str | None:
     try:
         # Build schema from schema string
         schema = build_schema(schema_str)
@@ -36,9 +37,30 @@ def validate_graphql_query_for_workflow(query: str, schema_str: str) -> List[Gra
 
         # Check if there were any validation errors
         if validation_errors:
-            return validation_errors
+            print("Validation errors found:")
+            return ", ".join(error.message for error in validation_errors)
         else:
             return None
 
     except GraphQLError as e:
-        return f"Error parsing or validating the query: {str(e)}"
+        return [e.message]
+    
+
+# query = """
+# {
+#   bills(where: {amount: {gt: 1000}, OR: [{customer: {name: {nstartsWith: "v"}}, {account: {type: {eq: DOMESTIC}}}]}){
+#     amount
+#     dueDate
+#     number
+#     month
+#     customer {
+#       name
+#       type
+#     }
+#   }
+# }
+# """
+# #escaped_query = query.replace("{", "{{").replace("}", "}}")
+
+# result = validate_graphql_query_for_workflow(query, full_schema)
+# print(result)

@@ -49,11 +49,19 @@ class QueryGenerationSignature(dspy.Signature):
 
 query_generator_model = dspy.ChainOfThought(QueryGenerationSignature)
 
+class QueryValidationSignature(dspy.Signature):
+    """Validate the GraphQL query against the schema."""
+    graphql_schema = dspy.InputField(desc="GraphQL schema definition")
+    graphQl_query = dspy.InputField(desc="GraphQl query to be validated")
+    validation_errors : List[str] | None= dspy.OutputField(desc="Validation errors")
+
+validation_model = dspy.ChainOfThought(QueryValidationSignature)
+
 class ErrorResolverSignature(dspy.Signature):
     """Reslves the validation error and generates the correct GraphQL query based on schema."""
     graphql_schema = dspy.InputField(desc="GraphQL schema definition")
     request = dspy.InputField(desc="User request for data", type=ReportRequest)
-    validation_error = dspy.InputField(desc="Validation errors", type= List[GraphQLError])
+    validation_error = dspy.InputField(desc="Validation errors", type= List[str])
     initial_query = dspy.InputField(desc="GraphQL query that needs to be corrected")
     query = dspy.OutputField(desc="The GraphQL query only, with no explanation or surrounding text.")
 

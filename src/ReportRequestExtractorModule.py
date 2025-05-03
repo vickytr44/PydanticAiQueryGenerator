@@ -40,13 +40,13 @@ class ReportRequestExtractor(dspy.Module):
         return dspy.Prediction(report_request=output.report_request)
 
 
-extractor = ReportRequestExtractor()
+# extractor = ReportRequestExtractor()
 
-# user_request = "get all accounts number and type along with customer name and age where customer name starts with 'v' and age is greater than 30"
-user_request = "get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
+# # user_request = "get all accounts number and type along with customer name and age where customer name starts with 'v' and age is greater than 30"
+# user_request = "get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
 
-result = extractor(
-    user_input= user_request,
-    graphQl_schema= full_schema
-)
-print(result.report_request)
+# result = extractor(
+#     user_input= user_request,
+#     graphQl_schema= full_schema
+# )
+# print(result.report_request)
