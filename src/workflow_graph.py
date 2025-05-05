@@ -23,8 +23,18 @@ schema = bill_schema_graphql
 @dataclass
 class State:
     input: str = field(default="")
+    schema: str = field(default="")
     retry_count: int = field(default=0)
     is_query_validated: bool = field(default=False)
+
+
+@dataclass
+class AssignEntitySchema(BaseNode[State]):
+
+    async def run(self, ctx: GraphRunContext[State]) -> ExtractReportReuest:
+
+        ctx.state.schema = schema
+        return ExtractReportReuest()
 
 @dataclass
 class ExtractReportReuest(BaseNode[State]):
@@ -37,7 +47,7 @@ class ExtractReportReuest(BaseNode[State]):
         user_input= ctx.state.input,
         graphQl_schema= schema
         )
-        print("Extracting report request...", result.report_request)
+        # print("Extracting report request...", result.report_request)
         return GenerateGraphQlQuery(result.report_request)
     
 @dataclass
@@ -62,7 +72,7 @@ class validateGraphQlQuery(BaseNode[State, None, str]):
 
         result = validate_graphql_query_for_workflow(query=self.query_to_be_validated, schema_str=schema)
 
-        print(ctx.state.retry_count, "validation error", result)
+        # print(ctx.state.retry_count, "validation error", result)
         ctx.state.is_query_validated = True
         if result is None:
             return End(self.query_to_be_validated)
@@ -79,8 +89,6 @@ class ResolveError(BaseNode[State, None, str]):
     validation_error: List[str]
 
     async def run(self, ctx: GraphRunContext[State]) -> validateGraphQlQuery:
-        # result= error_resolver_model(graphql_schema=schema, request = self.user_request, validation_error = self.validation_error, initial_query= self.query_to_be_Resolved)
-
         error_resolver = ErrorResolverModule()
 
         corrected_query = error_resolver(
@@ -90,15 +98,20 @@ class ResolveError(BaseNode[State, None, str]):
             initial_query= self.query_to_be_Resolved
         )
 
-        print("Generating query", corrected_query.query)
+        # print("Generating query", corrected_query.query)
         ctx.state.is_query_validated = False
         return validateGraphQlQuery(user_request= self.user_request, query_to_be_validated= corrected_query.query)
 
 
 async def main():
-    state = State(input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic")
-    query_generation_graph = Graph(nodes=(ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError))
-    result = await query_generation_graph.run(ExtractReportReuest(), state=state)
-    print(result.output)
+    while True:
+        # input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
+        query = input("You: ")
+        if query.lower() == "exit":
+            break
+        state = State(query)
+        query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError))
+        result = await query_generation_graph.run(AssignEntitySchema(), state=state)
+        print(result.output)
 
 asyncio.run(main())
