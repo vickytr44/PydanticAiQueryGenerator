@@ -18,7 +18,7 @@ from DspyModules.signature_definition_using_dspy import error_resolver_model, va
 from graphql.error import GraphQLError
 
 
-schema = bill_schema_graphql
+schema = full_schema
 
 @dataclass
 class State:
@@ -112,6 +112,6 @@ async def main():
         state = State(query)
         query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError))
         result = await query_generation_graph.run(AssignEntitySchema(), state=state)
-        print(result.output)
+        print("Ai:",result.output)
 
 asyncio.run(main())
