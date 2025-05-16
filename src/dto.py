@@ -1,5 +1,11 @@
 from pydantic import BaseModel, Field
 from typing import Any, List, Optional
+from enum import Enum
+
+class Entity(Enum):
+    Account = "accounts",
+    Customer = "customers",
+    Bill = "bills"
 
 class OrCondition(BaseModel):
     entity: str = Field(description="Entity for the OR condition")
