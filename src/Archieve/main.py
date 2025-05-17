@@ -1,6 +1,6 @@
-from query_generator import query_agent
+from Archieve.query_generator import query_agent
 
-from strict_user_input_generator import user_input_agent
+from Archieve.strict_user_input_generator import user_input_agent
 from Schema.bill_schema_graphql import bill_schema_graphql
 
 from pydantic_ai.messages import (
