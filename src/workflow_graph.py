@@ -103,15 +103,15 @@ class ResolveError(BaseNode[State, None, str]):
         return validateGraphQlQuery(user_request= self.user_request, query_to_be_validated= corrected_query.query)
 
 
-async def main():
-    while True:
-        # input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
-        query = input("You: ")
-        if query.lower() == "exit":
-            break
-        state = State(query)
-        query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError))
-        result = await query_generation_graph.run(AssignEntitySchema(), state=state)
-        print("Ai:",result.output)
+# async def main():
+#     while True:
+#         # input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
+#         query = input("You: ")
+#         if query.lower() == "exit":
+#             break
+#         state = State(query)
+#         query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError))
+#         result = await query_generation_graph.run(AssignEntitySchema(), state=state)
+#         print("Ai:",result.output)
 
-asyncio.run(main())
+# asyncio.run(main())
