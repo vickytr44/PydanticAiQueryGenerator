@@ -10,6 +10,7 @@ from DspyModules.ErrorResolverModule import ErrorResolverModule
 from DspyModules.QueryGeneratorModule import QueryGenerator
 from DspyModules.ReportRequestExtractorModule import ReportRequestExtractor
 from dto import ReportRequest
+from graphql_client import execute_graphql_query
 from model import model
 from Schema.full_chema_graphql import full_schema
 from Schema.bill_schema_graphql import bill_schema_graphql
@@ -68,14 +69,14 @@ class validateGraphQlQuery(BaseNode[State, None, str]):
     user_request: ReportRequest
     query_to_be_validated: str
 
-    async def run(self, ctx: GraphRunContext[State]) -> End[str] | ResolveError:
+    async def run(self, ctx: GraphRunContext[State]) -> ExecuteGraphQlQuery | ResolveError:
 
         result = validate_graphql_query_for_workflow(query=self.query_to_be_validated, schema_str=schema)
 
         # print(ctx.state.retry_count, "validation error", result)
         ctx.state.is_query_validated = True
         if result is None:
-            return End(self.query_to_be_validated)
+            return ExecuteGraphQlQuery(self.query_to_be_validated)
         else:
             ctx.state.retry_count += 1
             if ctx.state.retry_count > 3:
@@ -103,6 +104,15 @@ class ResolveError(BaseNode[State, None, str]):
         return validateGraphQlQuery(user_request= self.user_request, query_to_be_validated= corrected_query.query)
 
 
+@dataclass
+class ExecuteGraphQlQuery(BaseNode[State, None, str]):
+    query_to_execute: str
+
+    async def run(self, ctx: GraphRunContext[State]) -> End[str]:
+
+        result = execute_graphql_query(self.query_to_execute)
+        return End(result)
+
 # async def main():
 #     while True:
 #         # input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
@@ -110,7 +120,7 @@ class ResolveError(BaseNode[State, None, str]):
 #         if query.lower() == "exit":
 #             break
 #         state = State(query)
-#         query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError))
+#         query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery))
 #         result = await query_generation_graph.run(AssignEntitySchema(), state=state)
 #         print("Ai:",result.output)
 

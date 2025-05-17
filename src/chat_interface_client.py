@@ -5,7 +5,7 @@ from model import model
 from pydantic_ai.mcp import MCPServerHTTP
 from prompt import chat_interface_prompt
 
-from workflow_graph import AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, ResolveError, State, validateGraphQlQuery
+from workflow_graph import AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, ResolveError, State, validateGraphQlQuery, ExecuteGraphQlQuery
 
 from pydantic_ai.messages import (
     ModelMessage,
@@ -28,7 +28,7 @@ def Generate_GraphQl_Query_Tool(input : str) -> str:
     """
     print("Generating GraphQL query...")
     state = State(input)
-    query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError))
+    query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery))
     result = query_generation_graph.run_sync(AssignEntitySchema(), state=state)
     return result.output
 
