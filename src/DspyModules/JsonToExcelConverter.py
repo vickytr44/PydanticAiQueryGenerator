@@ -26,11 +26,12 @@ lm = dspy.LM(
 dspy.settings.configure(lm=lm, trace=["Test"])
 
 class SchemaInferenceSignature(dspy.Signature):
-    """Infers tabular schema from raw JSON data and returns a structured table."""
-
     raw_json: Any = dspy.InputField(desc="List of JSON objects to infer schema from.")
-    
-    tabular_rows : List[List[str]] = dspy.OutputField(desc="Table as list of rows (header + data)", type=List[List[str]])
+    reasoning: str = dspy.OutputField(desc="Step-by-step reasoning for the transformation")
+    tabular_rows: List[List[str]] = dspy.OutputField(
+        desc="Table as list of rows (header + data)",
+        type=List[List[str]]
+    )
 
 
 class SchemaInferenceModule(dspy.Module):
@@ -39,6 +40,7 @@ class SchemaInferenceModule(dspy.Module):
         self.infer_schema = dspy.ChainOfThought(SchemaInferenceSignature)    
 
     def forward(self, raw_json: str) -> dict:
+        
         # Step 1: Ask LLM to infer schema and return table as JSON array of arrays
         response = self.infer_schema(raw_json=raw_json)
 
@@ -46,6 +48,7 @@ class SchemaInferenceModule(dspy.Module):
         try:
             # If your OutputField is typed, DSPy might have already parsed tabular_rows into a list.
             # So first check if it's already a list:
+            print("Tabular rows type: ", response.tabular_rows)
             tabular_data = response.tabular_rows
 
             if isinstance(tabular_data, str):

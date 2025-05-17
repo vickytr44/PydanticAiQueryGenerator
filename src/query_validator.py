@@ -37,7 +37,6 @@ def validate_graphql_query_for_workflow(query: str, schema_str: str) -> str | No
 
         # Check if there were any validation errors
         if validation_errors:
-            print("Validation errors found:", validation_errors)
             return ", ".join(error.message for error in validation_errors)
         else:
             return None

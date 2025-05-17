@@ -50,7 +50,7 @@ class ExtractReportReuest(BaseNode[State]):
         user_input= ctx.state.input,
         graphQl_schema= schema
         )
-        print("Extracting report request...", result.report_request)
+        #print("Extracting report request...", result.report_request)
         return GenerateGraphQlQuery(result.report_request)
     
 @dataclass
@@ -73,7 +73,7 @@ class validateGraphQlQuery(BaseNode[State, None, str]):
 
     async def run(self, ctx: GraphRunContext[State]) -> ExecuteGraphQlQuery | ResolveError:
 
-        print("Validating query...", self.query_to_be_validated)
+        print("Validating query...", self.query_to_be_validated, "retry count:", ctx.state.retry_count)
         result = validate_graphql_query_for_workflow(query=self.query_to_be_validated, schema_str=schema)
 
         ctx.state.is_query_validated = True
@@ -120,7 +120,7 @@ class GenerateExcelReport(BaseNode[State, None, str]):
     data_as_json: Any
 
     async def run(self, ctx: GraphRunContext[State]) -> End[str]:
-        print("Generating Excel report...")
+        print("Generating Excel report...", self.data_as_json)
 
         schema_module = SchemaInferenceModule()
         # Call the module
