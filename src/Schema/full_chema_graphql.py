@@ -21,17 +21,6 @@ type AccountsEdge {
   cursor: String!
   node: Account!
 }
-type AvailableEntity {
-  id: String!
-  value: String!
-}
-type AvailableField {
-  name: String!
-  type: String!
-}
-type AvailableOperator {
-  name: String!
-}
 type Bill {
   id: Int!
   number: Int!
@@ -81,13 +70,8 @@ type PageInfo {
 }
 type Query {
   accounts( first: Int  after: String  last: Int  before: String where: AccountFilterInput  order: [AccountSortInput!] ): AccountsConnection  
-  availableEntities(where: AvailableEntityFilterInput  order: [AvailableEntitySortInput!] ): [AvailableEntity!]!
-  availableRelatedEntities(entity: String! where: AvailableEntityFilterInput  order: [AvailableEntitySortInput!] ): [AvailableEntity!]!
-  availableFields(entity: String! where: AvailableFieldFilterInput  order: [AvailableFieldSortInput!] ): [AvailableField!]!
-  availableOperators(entity: String! field: String! where: AvailableOperatorFilterInput  order: [AvailableOperatorSortInput!] ): [AvailableOperator!]!
   bills( first: Int  after: String  last: Int  before: String where: BillFilterInput  order: [BillSortInput!] ): BillsConnection  
   customers( first: Int  after: String  last: Int  before: String where: CustomerFilterInput  order: [CustomerSortInput!] ): CustomersConnection  
-  cleanedSchema(schemaName: Entity!): String!
 }
 input AccountFilterInput {
   and: [AccountFilterInput!]
@@ -113,34 +97,6 @@ input AccountTypeOperationFilterInput {
   neq: AccountType 
   in: [AccountType!] 
   nin: [AccountType!] 
-}
-input AvailableEntityFilterInput {
-  and: [AvailableEntityFilterInput!]
-  or: [AvailableEntityFilterInput!]
-  id: StringOperationFilterInput
-  value: StringOperationFilterInput
-}
-input AvailableEntitySortInput {
-  id: SortEnumType 
-  value: SortEnumType 
-}
-input AvailableFieldFilterInput {
-  and: [AvailableFieldFilterInput!]
-  or: [AvailableFieldFilterInput!]
-  name: StringOperationFilterInput
-  type: StringOperationFilterInput
-}
-input AvailableFieldSortInput {
-  name: SortEnumType 
-  type: SortEnumType 
-}
-input AvailableOperatorFilterInput {
-  and: [AvailableOperatorFilterInput!]
-  or: [AvailableOperatorFilterInput!]
-  name: StringOperationFilterInput
-}
-input AvailableOperatorSortInput {
-  name: SortEnumType 
 }
 input BillFilterInput {
   and: [BillFilterInput!]
@@ -273,11 +229,6 @@ input StringOperationFilterInput {
 enum AccountType {
   DOMESTIC
   COMMERCIAL
-}
-enum Entity {
-  ACCOUNT
-  CUSTOMER
-  BILL
 }
 enum Month {
   JANUARY
