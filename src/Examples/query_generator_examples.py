@@ -1,5 +1,6 @@
 import dspy
 import Schema.bill_schema_graphql as bill_schema_graphql
+import Schema.full_chema_graphql as full_schema
 from dto import AndCondition, OrCondition, RelatedEntity, ReportRequest, SortCondition
 
 
@@ -79,3 +80,44 @@ few_shot_example2 = dspy.Example(
         }
     """   
 )
+
+
+list_filter_request = ReportRequest(
+    main_entity="Customer",
+    fields_to_fetch_from_main_entity=["id", "name"],
+    and_conditions=[
+        AndCondition(entity="bills", field="amount", operation="gt", value=1000)
+    ],
+    related_entity_fields=[
+        RelatedEntity(entity="bills", fields=["amount"])
+    ],
+    or_conditions= None,
+    sort_field_order= None
+)
+
+list_filter_example = dspy.Example(
+    input= {
+        'request' : list_filter_request,
+        'graphql_schema': full_schema
+    },
+    output= """
+        query {
+        customers(where: { bills: { some: { amount: { gt: 1000 } } } }) {
+            nodes {
+            id
+            name
+            bills {
+                amount
+            }
+            }
+        }
+        }
+    """   
+)
+
+
+example_list = [
+    few_shot_example1,
+    few_shot_example2,
+    list_filter_example
+]

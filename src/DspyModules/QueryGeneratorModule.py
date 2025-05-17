@@ -5,7 +5,7 @@ from dto import AndCondition, OrCondition, RelatedEntity, ReportRequest, SortCon
 from Schema.account_schema_graphql import account_schema_graphql
 from Schema.bill_schema_graphql import bill_schema_graphql
 from Schema.full_chema_graphql import full_schema
-from Examples.query_generator_examples import few_shot_example1, few_shot_example2
+from Examples.query_generator_examples import example_list
 
 load_dotenv(override=True)
 
@@ -31,7 +31,7 @@ class QueryGenerator(dspy.Module):
 
         self.generator = dspy.ChainOfThought(QueryGenerationSignature)
 
-        self.generator.examples = [few_shot_example1, few_shot_example2]
+        self.generator.examples = example_list
         
         # self.generator.prompt_template = """
         # GraphQL Schema:

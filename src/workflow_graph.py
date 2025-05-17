@@ -81,7 +81,7 @@ class validateGraphQlQuery(BaseNode[State, None, str]):
             return ExecuteGraphQlQuery(self.query_to_be_validated)
         else:
             ctx.state.retry_count += 1
-            if ctx.state.retry_count > 3:
+            if ctx.state.retry_count > 5:
                 return End("Unable to generate a valid GraphQL query for the user request.")
             return ResolveError(user_request=self.user_request, validation_error=result, query_to_be_Resolved=self.query_to_be_validated)
         

@@ -2,6 +2,7 @@ import dspy
 
 from Schema.account_schema_graphql import account_schema_graphql
 from Schema.bill_schema_graphql import bill_schema_graphql
+from Schema.full_chema_graphql import full_schema
 from dto import AndCondition, RelatedEntity, ReportRequest
 
 extract_report_example1 = dspy.Example(
@@ -57,4 +58,21 @@ extract_report_example3 = dspy.Example(
     )
 )
 
-extract_report_examples = [extract_report_example1, extract_report_example2, extract_report_example3]
+extract_report_example4 = dspy.Example(
+    input={
+        'user_input': "get me customer with bill amount less than 1000",
+        'graphQl_schema':  full_schema       
+    },
+    output=ReportRequest(
+        main_entity='Customer',
+        fields_to_fetch_from_main_entity=["id", "name", "identityNumber", "age"],
+        or_conditions= None,
+        and_conditions= [AndCondition(entity='Bill', field='amount', operation='some', value={"lt": 1000})],
+        related_entity_fields=[
+            RelatedEntity(entity='Bills', fields=['amount'])
+        ],
+        sort_field_order=None
+    )
+)
+
+extract_report_examples = [extract_report_example1, extract_report_example2, extract_report_example3, extract_report_example4]
