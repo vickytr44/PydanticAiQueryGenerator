@@ -22,7 +22,9 @@ lm = dspy.LM(
     api_base=azure_endpoint,
     api_version=version,
     temperature=0.3,
-    cache= False
+    top_p=0.95,
+    cache= False,
+    cache_in_memory=False,
 )
 
 dspy.settings.configure(lm=lm, trace=["Test"])

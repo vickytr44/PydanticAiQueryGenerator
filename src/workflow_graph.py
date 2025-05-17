@@ -81,7 +81,7 @@ class validateGraphQlQuery(BaseNode[State, None, str]):
             return ExecuteGraphQlQuery(self.query_to_be_validated)
         else:
             ctx.state.retry_count += 1
-            if ctx.state.retry_count > 5:
+            if ctx.state.retry_count > 3:
                 return End("Unable to generate a valid GraphQL query for the user request.")
             return ResolveError(user_request=self.user_request, validation_error=result, query_to_be_Resolved=self.query_to_be_validated)
         
@@ -134,15 +134,15 @@ class GenerateExcelReport(BaseNode[State, None, str]):
         
         return End("File has been generated successfully")
 
-async def main():
-    while True:
-        # input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
-        query = input("You: ")
-        if query.lower() == "exit":
-            break
-        state = State(query)
-        query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport))
-        result = await query_generation_graph.run(AssignEntitySchema(), state=state)
-        print("Ai:",result.output)
+# async def main():
+#     while True:
+#         # input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
+#         query = input("You: ")
+#         if query.lower() == "exit":
+#             break
+#         state = State(query)
+#         query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport))
+#         result = await query_generation_graph.run(AssignEntitySchema(), state=state)
+#         print("Ai:",result.output)
 
-asyncio.run(main())
+# asyncio.run(main())

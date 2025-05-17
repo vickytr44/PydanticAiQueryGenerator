@@ -17,14 +17,14 @@ from pydantic_ai.messages import (
 
 server = MCPServerHTTP(url="http://127.0.0.1:8000/sse")
 
-chat_interface_agent = Agent(model, system_prompt= chat_interface_prompt, model_settings={
-    "temperature": 0.5, "timeout": 30
+chat_interface_agent = Agent(model, system_prompt= chat_interface_prompt, model_settings= {
+    "temperature": 0.3, "timeout": 30, "top_p": 0.9
 }, mcp_servers=[server])
 
-@chat_interface_agent.tool_plain(name="Generate_GraphQl_Query_Tool")
-def Generate_GraphQl_Query_Tool(input : str) -> str:
+@chat_interface_agent.tool_plain(name="Generate_GraphQl_Query_And_Report_Tool")
+def Generate_GraphQl_Query_And_Report_Tool(input : str) -> str:
     """
-    Generate a GraphQL query based on the user input.
+    Generate a GraphQL query based on the user input and report by using the generated qery.
     """
     print("Generating GraphQL query...")
     state = State(input)
