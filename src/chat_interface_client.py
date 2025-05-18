@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 from pydantic_graph import Graph
+from dto import ChatRequest, ChatResponse
 from model import model
 from pydantic_ai.mcp import MCPServerHTTP
 from prompt import chat_interface_prompt
@@ -52,18 +53,6 @@ async def main():
         chat_history.append(ModelResponse(parts=[TextPart(content=result.data)]))  # Add AI message
 
         print(f"AI: {result.data}")
-
-class ChatRequest(BaseModel):
-    message: str = Field(
-        description="The message to send to the AI assistant",
-        example="Generate a report about sales data"
-    )
-
-class ChatResponse(BaseModel):
-    response: str = Field(
-        description="The AI assistant's response",
-        example="I have generated a report based on the sales data..."
-    )
 
 app = FastAPI(
     title="AI Chat Interface API",

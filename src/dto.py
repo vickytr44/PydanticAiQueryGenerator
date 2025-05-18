@@ -35,3 +35,15 @@ class ReportRequest(BaseModel):
     and_conditions: Optional[List[AndCondition]] = Field(default=None, description="List of AND conditions")
     related_entity_fields: Optional[List[RelatedEntity]] = Field(default=None, description="Related entities and their fields to fetch")
     sort_field_order: Optional[List[SortCondition]] = Field(default=None, description="Sort entity, field and order")
+
+class ChatRequest(BaseModel):
+    message: str = Field(
+        description="The message to send to the AI assistant",
+        example="Generate a report about sales data"
+    )
+
+class ChatResponse(BaseModel):
+    response: str = Field(
+        description="The AI assistant's response",
+        example="I have generated a report based on the sales data..."
+    )
