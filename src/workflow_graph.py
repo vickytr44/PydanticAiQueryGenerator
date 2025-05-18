@@ -132,7 +132,7 @@ class GenerateExcelReport(BaseNode[State, None, str]):
         with open(f"C:\\PydanticAiReporting\\FileStorage\\report_{timestamp}.xlsx", "wb") as f:
             f.write(result["binary_output"])
         
-        return End("File has been generated successfully")
+        return End(f"File has been generated successfully. Your Excel report is ready! Download it here: http://localhost:8080/download/report_{timestamp}")
 
 # async def main():
 #     while True:

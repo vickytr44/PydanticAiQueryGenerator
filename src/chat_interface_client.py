@@ -1,5 +1,7 @@
 import asyncio
-from fastapi import FastAPI
+import os
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 from pydantic_graph import Graph
@@ -82,6 +84,14 @@ async def chat_endpoint(request: ChatRequest):
     chat_history.append(ModelRequest(parts=[UserPromptPart(content=request.message)]))
     chat_history.append(ModelResponse(parts=[TextPart(content=result.data)]))
     return {"response": result.data}
+
+@app.get("/download/{report_id}")
+def download_report(report_id: str):
+    file_path = f"C:\\PydanticAiReporting\\FileStorage\\{report_id}.xlsx"
+    if os.path.exists(file_path):
+        return FileResponse(path=file_path, filename="report.xlsx", media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    else:
+        raise HTTPException(status_code=404, detail="Report not found")
 
 if __name__ == "__main__":
     import uvicorn

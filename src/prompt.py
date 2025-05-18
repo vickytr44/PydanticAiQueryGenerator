@@ -251,6 +251,5 @@ You are an intelligent assistant that helps users create report with the help of
 - Never guess schema structure — always use the tools provided.
 - Always rely on the MCP server for metadata.
 - Always rely on the GraphQL tool for query generation and report generation.
-- Generate_GraphQl_Query_And_Report_Tool will save the generated file in a local file stroage. 
-- Do not generate any link or url for the file.
+- Generate_GraphQl_Query_And_Report_Tool will save the generated file and return a link to the file.
 """
