@@ -11,7 +11,7 @@ from DspyModules.JsonToExcelConverter import SchemaInferenceModule
 from DspyModules.QueryGeneratorModule import QueryGenerator
 from DspyModules.ReportRequestExtractorModule import ReportRequestExtractor
 from dto import ReportRequest
-from graphql_client import execute_graphql_query
+from graphql_client import IsResponseEmpty, execute_graphql_query
 from model import model
 from Schema.full_chema_graphql import full_schema
 from Schema.bill_schema_graphql import bill_schema_graphql
@@ -28,6 +28,7 @@ class State:
     input: str = field(default="")
     schema: str = field(default="")
     retry_count: int = field(default=0)
+    report_request: ReportRequest = field(default=None)
     is_query_validated: bool = field(default=False)
 
 
@@ -50,6 +51,7 @@ class ExtractReportReuest(BaseNode[State]):
         user_input= ctx.state.input,
         graphQl_schema= schema
         )
+        ctx.state.report_request = result.report_request
         #print("Extracting report request...", result.report_request)
         return GenerateGraphQlQuery(result.report_request)
     
@@ -110,9 +112,12 @@ class ResolveError(BaseNode[State, None, str]):
 class ExecuteGraphQlQuery(BaseNode[State, None, str]):
     query_to_execute: str
 
-    async def run(self, ctx: GraphRunContext[State]) -> GenerateExcelReport:
+    async def run(self, ctx: GraphRunContext[State]) -> GenerateExcelReport | End[str]:
 
         result = execute_graphql_query(self.query_to_execute)
+        is_response_empty = IsResponseEmpty(result)
+        if is_response_empty:
+            return End("No data found for the given query.")
         return GenerateExcelReport(result)
     
 @dataclass
