@@ -1,4 +1,6 @@
 import asyncio
+from fastapi import FastAPI
+from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 from pydantic_graph import Graph
 from model import model
@@ -49,5 +51,43 @@ async def main():
 
         print(f"AI: {result.data}")
 
+class ChatRequest(BaseModel):
+    message: str = Field(
+        description="The message to send to the AI assistant",
+        example="Generate a report about sales data"
+    )
+
+class ChatResponse(BaseModel):
+    response: str = Field(
+        description="The AI assistant's response",
+        example="I have generated a report based on the sales data..."
+    )
+
+app = FastAPI(
+    title="AI Chat Interface API",
+    description="API for interacting with the AI reporting system",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+@app.post("/chat", 
+    response_model=ChatResponse,
+    summary="Chat with AI Assistant",
+    description="Send a message to the AI assistant and get a response. The assistant can generate GraphQL queries and reports based on your request."
+)
+async def chat_endpoint(request: ChatRequest):
+    async with chat_interface_agent.run_mcp_servers():
+        result = await chat_interface_agent.run(request.message, message_history=chat_history)
+    chat_history.append(ModelRequest(parts=[UserPromptPart(content=request.message)]))
+    chat_history.append(ModelResponse(parts=[TextPart(content=result.data)]))
+    return {"response": result.data}
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    import uvicorn
+    # Run API server by default, use --cli flag to run in CLI mode
+    import sys
+    if "--cli" in sys.argv:
+        asyncio.run(main())
+    else:
+        uvicorn.run(app, host="0.0.0.0", port=8080)
