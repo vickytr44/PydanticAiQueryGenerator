@@ -30,7 +30,21 @@ class State:
     retry_count: int = field(default=0)
     report_request: ReportRequest = field(default=None)
     is_query_validated: bool = field(default=False)
+    should_report_be_created: bool = field(default=False)
 
+
+# @dataclass
+# class ShouldReportBeCreated(BaseNode[State]):
+
+#     async def run(self, ctx: GraphRunContext[State]) -> AssignEntitySchema:
+
+#         print("input", ctx.state.input)
+#         module = ShouldReportBeGeneratedModule()
+#         result = module(
+#             user_request= ctx.state.input
+#         )
+#         ctx.state.should_report_be_created = result.should_generate_report
+#         return AssignEntitySchema()
 
 @dataclass
 class AssignEntitySchema(BaseNode[State]):
@@ -118,6 +132,9 @@ class ExecuteGraphQlQuery(BaseNode[State, None, str]):
         is_response_empty = IsResponseEmpty(result)
         if is_response_empty:
             return End("No data found for the given query.")
+        print("should report be created?", ctx.state.should_report_be_created)
+        if not ctx.state.should_report_be_created:
+            return End(result)
         return GenerateExcelReport(result)
     
 @dataclass
@@ -146,7 +163,7 @@ class GenerateExcelReport(BaseNode[State, None, str]):
 #         if query.lower() == "exit":
 #             break
 #         state = State(query)
-#         query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport))
+#         query_generation_graph = Graph(nodes=( AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport))
 #         result = await query_generation_graph.run(AssignEntitySchema(), state=state)
 #         print("Ai:",result.output)
 
