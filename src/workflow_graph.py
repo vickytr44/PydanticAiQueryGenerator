@@ -2,10 +2,13 @@ from __future__ import annotations as _annotations
 
 import asyncio
 from dataclasses import dataclass, field
+import io
 from typing import Any, List
 
+import pandas as pd
 from pydantic_graph import BaseNode, End, Graph, GraphRunContext
 
+from DspyModules.ChartGenerationModule import ChartIntentModule, generate_chart_image
 from DspyModules.ErrorResolverModule import ErrorResolverModule
 from DspyModules.JsonToExcelConverter import SchemaInferenceModule
 from DspyModules.QueryGeneratorModule import QueryGenerator
@@ -31,6 +34,8 @@ class State:
     report_request: ReportRequest = field(default=None)
     is_query_validated: bool = field(default=False)
     should_report_be_created: bool = field(default=False)
+    should_chart_be_created: bool = field(default=False)
+    propmt_for_chart: str = field(default="")
 
 
 # @dataclass
@@ -126,16 +131,54 @@ class ResolveError(BaseNode[State, None, str]):
 class ExecuteGraphQlQuery(BaseNode[State, None, str]):
     query_to_execute: str
 
-    async def run(self, ctx: GraphRunContext[State]) -> GenerateExcelReport | End[str]:
+    async def run(self, ctx: GraphRunContext[State]) -> GenerateExcelReport | GenerateChart | End[str]:
 
         result = execute_graphql_query(self.query_to_execute)
         is_response_empty = IsResponseEmpty(result)
         if is_response_empty:
             return End("No data found for the given query.")
         print("should report be created?", ctx.state.should_report_be_created)
-        if not ctx.state.should_report_be_created:
+        if not ctx.state.should_report_be_created and not ctx.state.should_chart_be_created:
             return End(result)
+        
+        if ctx.state.should_chart_be_created:
+            return GenerateChart(data_as_json=result)
+        
         return GenerateExcelReport(result)
+    
+
+@dataclass
+class GenerateChart(BaseNode[State, None, str]):
+    data_as_json: Any
+
+    async def run(self, ctx: GraphRunContext[State]) -> End[str]:
+        print("Generating chart...", self.data_as_json)
+
+        schema_module = SchemaInferenceModule()
+        # Call the module
+        result = schema_module.forward(raw_json=self.data_as_json)
+
+        excel_buffer = io.BytesIO(result["binary_output"])
+        df = pd.read_excel(excel_buffer)
+
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+
+        chart_agent = ChartIntentModule()
+
+        intent = chart_agent(prompt=ctx.state.propmt_for_chart)
+
+        print("Intent Extracted:", intent)
+
+        # Call general-purpose chart function
+        filename = generate_chart_image(
+            data=df,
+            x_col=intent.x_column,
+            y_col=intent.y_column,
+            chart_type=intent.chart_type,
+            filename=f"chart_{timestamp}.pdf"
+        )
+        
+        return End(f"File has been generated successfully. Your Excel report is ready! Download it here: http://localhost:8080/downloadchartpdf/{filename}")
     
 @dataclass
 class GenerateExcelReport(BaseNode[State, None, str]):
@@ -154,7 +197,7 @@ class GenerateExcelReport(BaseNode[State, None, str]):
         with open(f"C:\\PydanticAiReporting\\FileStorage\\report_{timestamp}.xlsx", "wb") as f:
             f.write(result["binary_output"])
         
-        return End(f"File has been generated successfully. Your Excel report is ready! Download it here: http://localhost:8080/download/report_{timestamp}")
+        return End(f"File has been generated successfully. Your Excel report is ready! Download it here: http://localhost:8080/downloadexcelreport/report_{timestamp}")
 
 # async def main():
 #     while True:

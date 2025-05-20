@@ -10,7 +10,7 @@ from model import model
 from pydantic_ai.mcp import MCPServerHTTP
 from prompt import chat_interface_prompt
 
-from workflow_graph import AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, ResolveError, State, validateGraphQlQuery, ExecuteGraphQlQuery, GenerateExcelReport
+from workflow_graph import AssignEntitySchema, ExtractReportReuest, GenerateChart, GenerateGraphQlQuery, ResolveError, State, validateGraphQlQuery, ExecuteGraphQlQuery, GenerateExcelReport
 
 from pydantic_ai.messages import (
     ModelMessage,
@@ -26,19 +26,24 @@ chat_interface_agent = Agent(model, system_prompt= chat_interface_prompt, model_
     "temperature": 0.3, "timeout": 30, "top_p": 0.9
 }, mcp_servers=[server])
 
-@chat_interface_agent.tool_plain(name="Generate_GraphQl_Query_And_Report_Tool", require_parameter_descriptions= True, docstring_format="google" )
-def Generate_GraphQl_Query_And_Report_Tool(user_input: str, should_generate_report: bool) -> str:
+@chat_interface_agent.tool_plain(name="process_data_request ", require_parameter_descriptions= True, docstring_format="google" )
+def process_data_request (user_input: str, should_generate_report: bool, should_generate_chart: bool, prompt_for_chart_generation: str) -> str:
     """
     Accept a user message in plain English describing the user input. Mention if the user wants to generate a report or not.
     Only set `should_generate_report` to true if the user *explicitly asks* for a report or to "generate a report".
+    Only set `should_generate_chart` to true if the user *explicitly asks* for a chart or to "generate a chart".
+    populate `prompt_for_chart_generation` with the prompt to be used for chart generation. This is used only when `should_generate_chart` is true.
 
     Args:
         user_input: Plain English description the user input.
         should_generate_report: Should be true only when the user explicitly asks to generate a report".
+        should_generate_chart: Should be true only when the user explicitly asks to generate a chart.
+        prompt_for_chart_generation: The prompt to be used for chart generation. This is used only when `should_generate_chart` is true.
     """
     print("Generating GraphQL query...", user_input, "should generate report:", should_generate_report)
-    state = State(input=user_input, should_report_be_created=should_generate_report)
-    query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport))
+    state = State(input=user_input, should_report_be_created=should_generate_report, should_chart_be_created=should_generate_chart, propmt_for_chart=prompt_for_chart_generation)
+    # Create the graph and run it
+    query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport, GenerateChart))
     result = query_generation_graph.run_sync(AssignEntitySchema(), state=state)
     return result.output
 
@@ -88,11 +93,19 @@ async def chat_endpoint(request: ChatRequest):
     chat_history.append(ModelResponse(parts=[TextPart(content=result.data)]))
     return {"response": result.data}
 
-@app.get("/download/{report_id}")
+@app.get("/downloadexcelreport/{report_id}")
 def download_report(report_id: str):
     file_path = f"C:\\PydanticAiReporting\\FileStorage\\{report_id}.xlsx"
     if os.path.exists(file_path):
-        return FileResponse(path=file_path, filename="report.xlsx", media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        return FileResponse(path=file_path, filename=f"{report_id}.xlsx", media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    else:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+@app.get("/downloadchartpdf/{chart_id}")
+def download_report(chart_id: str):
+    file_path = f"C:\\PydanticAiReporting\\FileStorage\\{chart_id}.pdf"
+    if os.path.exists(file_path):
+        return FileResponse(path=file_path, filename=f"{chart_id}.pdf", media_type='application/pdf')
     else:
         raise HTTPException(status_code=404, detail="Report not found")
 
