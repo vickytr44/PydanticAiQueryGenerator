@@ -1,0 +1,31 @@
+<div class="chat-container">
+    <div class="card shadow">
+      <div class="card-header bg-warning text-white">
+        <h5 class="mb-0">AI Chat-bot</h5>
+      </div>
+  
+      <div class="card-body" #scrollContainer>
+        <div *ngFor="let msg of messages$ | async" class="mb-3" [ngClass]="msg.from === 'user' ? 'message-row user' : 'message-row ai'">
+          <div class="message-content" [innerHTML]="msg.text | linkify"></div>
+        </div>
+  
+        <div *ngIf="typing$ | async">
+          <div class="typing-indicator">AI is typing<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>
+        </div>
+      </div>
+  
+      <div class="card-footer">
+        <form (ngSubmit)="sendMessage()" class="d-flex gap-2">
+          <input
+            class="form-control"
+            [(ngModel)]="message"
+            name="message"
+            placeholder="Type your message..."
+            required
+          />
+          <button class="btn btn-warning text-white" type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
