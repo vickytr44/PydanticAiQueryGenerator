@@ -238,7 +238,6 @@ You are an intelligent assistant that helps users create report with the help of
 
 2. **process_data_request**
    - Input of the tool should be in natural language and contain all the necessary information that the user has provided.
-   - should_generate_report should be true only when the user explicitly asks for a report.
    - Use this to generate the actual GraphQL query based on the user's request and finaly the report from the genrated query.
    - It handles all schema resolution, argument building, filtering, sorting, and nesting logic.
    - **Do not use the MCP server** during query generation.

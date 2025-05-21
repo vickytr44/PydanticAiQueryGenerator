@@ -1,6 +1,5 @@
 from __future__ import annotations as _annotations
 
-import asyncio
 from dataclasses import dataclass, field
 import io
 from typing import Any, List
@@ -8,7 +7,8 @@ from typing import Any, List
 import pandas as pd
 from pydantic_graph import BaseNode, End, Graph, GraphRunContext
 
-from DspyModules.ChartGenerationModule import ChartIntentModule, generate_chart_image
+from DspyModules.ChartClarificationModule import ChartClarifier
+from chart_generator import generate_chart_image
 from DspyModules.ErrorResolverModule import ErrorResolverModule
 from DspyModules.JsonToExcelConverter import SchemaInferenceModule
 from DspyModules.QueryGeneratorModule import QueryGenerator
@@ -35,21 +35,6 @@ class State:
     is_query_validated: bool = field(default=False)
     should_report_be_created: bool = field(default=False)
     should_chart_be_created: bool = field(default=False)
-    propmt_for_chart: str = field(default="")
-
-
-# @dataclass
-# class ShouldReportBeCreated(BaseNode[State]):
-
-#     async def run(self, ctx: GraphRunContext[State]) -> AssignEntitySchema:
-
-#         print("input", ctx.state.input)
-#         module = ShouldReportBeGeneratedModule()
-#         result = module(
-#             user_request= ctx.state.input
-#         )
-#         ctx.state.should_report_be_created = result.should_generate_report
-#         return AssignEntitySchema()
 
 @dataclass
 class AssignEntitySchema(BaseNode[State]):
@@ -161,20 +146,21 @@ class GenerateChart(BaseNode[State, None, str]):
         excel_buffer = io.BytesIO(result["binary_output"])
         df = pd.read_excel(excel_buffer)
 
+        chart_clarifier = ChartClarifier()
+
+        chart_clarifier_result = chart_clarifier(ctx.state.input, df)
+
+        if chart_clarifier_result.needs_clarification == True:
+            return End({"clarification_needed": True, "question": chart_clarifier_result.clarification_question})
+
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-
-        chart_agent = ChartIntentModule()
-
-        intent = chart_agent(prompt=ctx.state.propmt_for_chart)
-
-        print("Intent Extracted:", intent)
 
         # Call general-purpose chart function
         filename = generate_chart_image(
             data=df,
-            x_col=intent.x_column,
-            y_col=intent.y_column,
-            chart_type=intent.chart_type,
+            x_col=chart_clarifier_result.x_col,
+            y_col=chart_clarifier_result.y_col,
+            chart_type=chart_clarifier_result.chart_type,
             filename=f"chart_{timestamp}.pdf"
         )
         

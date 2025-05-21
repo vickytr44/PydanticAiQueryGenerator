@@ -28,7 +28,7 @@ dspy.settings.configure(lm=lm, trace=["Test"])
 
 
 class ErrorResolverSignature(dspy.Signature):
-    """Reslves the validation error and generates the correct GraphQL query based on schema."""
+    """Resolves the validation error and generates the correct GraphQL query based on schema."""
     graphql_schema = dspy.InputField(desc="GraphQL schema definition")
     request = dspy.InputField(desc="User request for data", type=ReportRequest)
     validation_error = dspy.InputField(desc="Validation errors", type= List[str])

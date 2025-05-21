@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic_ai import Agent
 from pydantic_graph import Graph
+from DspyModules.UserRequestAnalyserModule import AnalyzeUserRequestModule
 from dto import ChatRequest, ChatResponse
 from model import model
 from pydantic_ai.mcp import MCPServerHTTP
@@ -26,22 +27,25 @@ chat_interface_agent = Agent(model, system_prompt= chat_interface_prompt, model_
     "temperature": 0.3, "timeout": 30, "top_p": 0.9
 }, mcp_servers=[server])
 
-@chat_interface_agent.tool_plain(name="process_data_request ", require_parameter_descriptions= True, docstring_format="google" )
-def process_data_request (user_input: str, should_generate_report: bool, should_generate_chart: bool, prompt_for_chart_generation: str) -> str:
+@chat_interface_agent.tool_plain(name="process_data_request", require_parameter_descriptions= True, docstring_format="google" )
+def process_data_request(user_input: str) -> str:
     """
-    Accept a user message in plain English describing the user input. Mention if the user wants to generate a report or not.
-    Only set `should_generate_report` to true if the user *explicitly asks* for a report or to "generate a report".
-    Only set `should_generate_chart` to true if the user *explicitly asks* for a chart or to "generate a chart".
-    populate `prompt_for_chart_generation` with the prompt to be used for chart generation. This is used only when `should_generate_chart` is true.
+    Processes a consolidated user request in plain English. The input should include all details provided by the user, such as requested data, filters, and whether the user wants to generate a report, a chart, or simply retrieve data. The function analyzes the request and determines the appropriate workflow.
 
     Args:
-        user_input: Plain English description the user input.
-        should_generate_report: Should be true only when the user explicitly asks to generate a report".
-        should_generate_chart: Should be true only when the user explicitly asks to generate a chart.
-        prompt_for_chart_generation: The prompt to be used for chart generation. This is used only when `should_generate_chart` is true.
+        user_input: A plain English statement fully describing the user's request, including any instructions to generate a report, chart, or just fetch data.
     """
-    print("Generating GraphQL query...", user_input, "should generate report:", should_generate_report)
-    state = State(input=user_input, should_report_be_created=should_generate_report, should_chart_be_created=should_generate_chart, propmt_for_chart=prompt_for_chart_generation)
+    print("Generating GraphQL query...", user_input)
+
+    analyzer_module = AnalyzeUserRequestModule()
+    result = analyzer_module(input=user_input)
+    print("Analysis:", result)
+
+    state = State(
+        input=user_input,
+        should_report_be_created=result.should_generate_report,
+        should_chart_be_created=result.should_generate_chart
+    )
     # Create the graph and run it
     query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport, GenerateChart))
     result = query_generation_graph.run_sync(AssignEntitySchema(), state=state)
