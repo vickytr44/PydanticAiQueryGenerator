@@ -44,12 +44,12 @@ class ChartClarifier(dspy.Module):
         return self.selector(user_input=input, data_sample=data_sample)
     
 
-df = pd.read_excel("C:\\PydanticAiReporting\\FileStorage\\report.xlsx")
+# df = pd.read_excel("C:\\PydanticAiReporting\\FileStorage\\report.xlsx")
 
-chart_clarifier = ChartClarifier()
-input = "Generate a bar chart for bill amount for all the customers"
+# chart_clarifier = ChartClarifier()
+# input = "Generate a bar chart for bill amount for all the customers"
 
-result = chart_clarifier(input, df)
-print(result)
+# result = chart_clarifier(input, df)
+# print(result)
 
 
