@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-def generate_chart_image(data, x_col, y_col, chart_type="bar", filename="output_chart.pdf"):
+def generate_chart_image(data, x_col, y_col, chart_type="bar", filename="output_chart"):
     if x_col not in data.columns or y_col not in data.columns:
         raise ValueError(f"Columns '{x_col}' or '{y_col}' not found in data.")
 
@@ -24,7 +24,7 @@ def generate_chart_image(data, x_col, y_col, chart_type="bar", filename="output_
         plt.ylabel(y_col)
 
     plt.tight_layout()
-    plt.savefig(f"C:\\PydanticAiReporting\\FileStorage\\{filename}")
+    plt.savefig(f"C:\\PydanticAiReporting\\FileStorage\\{filename}.pdf")
     plt.close()
 
     return filename

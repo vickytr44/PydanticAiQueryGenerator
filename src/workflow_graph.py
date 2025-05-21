@@ -161,10 +161,10 @@ class GenerateChart(BaseNode[State, None, str]):
             x_col=chart_clarifier_result.x_col,
             y_col=chart_clarifier_result.y_col,
             chart_type=chart_clarifier_result.chart_type,
-            filename=f"chart_{timestamp}.pdf"
+            filename=f"chart_{timestamp}"
         )
         
-        return End(f"File has been generated successfully. Your Excel report is ready! Download it here: http://localhost:8080/downloadchartpdf/{filename}")
+        return End(f"File has been generated successfully. Your chart is ready! Download it here: http://localhost:8080/downloadchartpdf/{filename}")
     
 @dataclass
 class GenerateExcelReport(BaseNode[State, None, str]):
