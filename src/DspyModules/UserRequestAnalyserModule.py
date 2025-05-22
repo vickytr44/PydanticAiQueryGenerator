@@ -1,4 +1,5 @@
 import os
+from typing import Literal
 from dotenv import load_dotenv
 import dspy
 
@@ -34,11 +35,13 @@ class AnalyzeUserRequestSignature(dspy.Signature):
         - should_generate_report (bool): True if report generation is explicitly requested
         - should_generate_chart (bool): True if chart generation is explicitly requested
         - requesting_data (bool): True if the user is just requesting data
+        - aggregate_operation (str): The type of aggregation operation requested
     """
     user_input: str = dspy.InputField(desc="The user input text containing information about report/chart generation or just requesting data.")
     should_generate_report: bool = dspy.OutputField(desc="True if report generation is explicitly requested", type=bool)
     should_generate_chart : bool = dspy.OutputField(desc="True if chart generation is explicitly requested", type=bool)
     requesting_data : bool = dspy.OutputField(desc="True if the user is just requesting data", type=bool)
+    aggregate_operation: Literal["sum", "mean", "std", "variance", "median", "nunique"] | None = dspy.OutputField(desc="The type of aggregation operation requested", default=None)
 
 class AnalyzeUserRequestModule(dspy.Module):
     def __init__(self):

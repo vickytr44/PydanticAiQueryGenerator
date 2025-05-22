@@ -2,12 +2,13 @@ from __future__ import annotations as _annotations
 
 from dataclasses import dataclass, field
 import io
-from typing import Any, List
+from typing import Any, List, Literal
 
 import pandas as pd
 from pydantic_graph import BaseNode, End, Graph, GraphRunContext
 
 from DspyModules.ChartClarificationModule import ChartClarifier
+from DspyModules.DataAnalysisClarificationModule import DataAnalysisClarifier, perform_analysis
 from chart_generator import generate_chart_image
 from DspyModules.ErrorResolverModule import ErrorResolverModule
 from DspyModules.JsonToExcelConverter import SchemaInferenceModule
@@ -35,6 +36,7 @@ class State:
     is_query_validated: bool = field(default=False)
     should_report_be_created: bool = field(default=False)
     should_chart_be_created: bool = field(default=False)
+    aggregate_operation: Literal["sum", "mean", "std", "variance", "median", "nunique"] = field(default=None)
 
 @dataclass
 class AssignEntitySchema(BaseNode[State]):
@@ -124,6 +126,8 @@ class ExecuteGraphQlQuery(BaseNode[State, None, str]):
             return End("No data found for the given query.")
         print("should report be created?", ctx.state.should_report_be_created)
         if not ctx.state.should_report_be_created and not ctx.state.should_chart_be_created:
+            if ctx.state.aggregate_operation is not None:
+                return PerformAggregation(data_as_json=result)
             return End(result)
         
         if ctx.state.should_chart_be_created:
@@ -185,6 +189,32 @@ class GenerateExcelReport(BaseNode[State, None, str]):
         
         return End(f"File has been generated successfully. Your Excel report is ready! Download it here: http://localhost:8080/downloadexcelreport/report_{timestamp}")
 
+@dataclass
+class PerformAggregation(BaseNode[State, None, str]):
+    data_as_json: Any
+
+    async def run(self, ctx: GraphRunContext[State]) -> End[str]:
+        print("Performing aggregation...", ctx.state.aggregate_operation)
+
+        schema_module = SchemaInferenceModule()
+        # Call the module
+        result = schema_module.forward(raw_json=self.data_as_json)
+
+        excel_buffer = io.BytesIO(result["binary_output"])
+        df = pd.read_excel(excel_buffer)
+
+        clarifier = DataAnalysisClarifier()
+        result = clarifier(input, df)
+
+        print(result)
+
+        if result.needs_clarification == True:
+            return({"clarification_needed": True, "question": result.clarification_question})
+
+        output_df = perform_analysis(df, result.operation, result.group_by_col, result.target_col)
+        return End(output_df) 
+    
+
 # async def main():
 #     while True:
 #         # input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
@@ -192,7 +222,7 @@ class GenerateExcelReport(BaseNode[State, None, str]):
 #         if query.lower() == "exit":
 #             break
 #         state = State(query)
-#         query_generation_graph = Graph(nodes=( AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport))
+#         query_generation_graph = Graph(nodes=( AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport, PerformAggregation))
 #         result = await query_generation_graph.run(AssignEntitySchema(), state=state)
 #         print("Ai:",result.output)
 

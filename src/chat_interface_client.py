@@ -11,7 +11,7 @@ from model import model
 from pydantic_ai.mcp import MCPServerHTTP
 from prompt import chat_interface_prompt
 
-from workflow_graph import AssignEntitySchema, ExtractReportReuest, GenerateChart, GenerateGraphQlQuery, ResolveError, State, validateGraphQlQuery, ExecuteGraphQlQuery, GenerateExcelReport
+from workflow_graph import AssignEntitySchema, ExtractReportReuest, GenerateChart, GenerateGraphQlQuery, PerformAggregation, ResolveError, State, validateGraphQlQuery, ExecuteGraphQlQuery, GenerateExcelReport
 
 from pydantic_ai.messages import (
     ModelMessage,
@@ -47,7 +47,7 @@ def process_data_request(user_input: str) -> str:
         should_chart_be_created=result.should_generate_chart
     )
     # Create the graph and run it
-    query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport, GenerateChart))
+    query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport, GenerateChart, PerformAggregation))
     result = query_generation_graph.run_sync(AssignEntitySchema(), state=state)
     return result.output
 
