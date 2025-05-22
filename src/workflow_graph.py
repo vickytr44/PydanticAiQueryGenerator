@@ -84,6 +84,7 @@ class validateGraphQlQuery(BaseNode[State, None, str]):
         print("Validating query...", self.query_to_be_validated, "retry count:", ctx.state.retry_count)
         result = validate_graphql_query_for_workflow(query=self.query_to_be_validated, schema_str=schema)
 
+        print("Validation result:", result)
         ctx.state.is_query_validated = True
         if result is None:
             return ExecuteGraphQlQuery(self.query_to_be_validated)
