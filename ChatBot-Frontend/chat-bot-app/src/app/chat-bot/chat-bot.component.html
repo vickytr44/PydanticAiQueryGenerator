@@ -6,23 +6,29 @@
   
       <div class="card-body" #scrollContainer>
         <div *ngFor="let msg of messages$ | async" class="mb-3" [ngClass]="msg.from === 'user' ? 'message-row user' : 'message-row ai'">
-          <div class="message-content" [innerHTML]="msg.text | linkify"></div>
+          <div class="message-bubble">
+            <span class="icon">{{ msg.from === 'user' ? '👤' : '🤖' }}</span>
+            <div class="message-content" [innerHTML]="msg.text | linkifyBeautify"></div>
+          </div>
         </div>
   
         <div *ngIf="typing$ | async">
-          <div class="typing-indicator">AI is typing<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>
+          <div class="typing-indicator">Thinking<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>
         </div>
       </div>
   
       <div class="card-footer">
         <form (ngSubmit)="sendMessage()" class="d-flex gap-2">
-          <input
-            class="form-control"
+          <textarea
+            class="form-control auto-resize"
             [(ngModel)]="message"
             name="message"
             placeholder="Type your message..."
+            rows="1"
+            (input)="adjustHeight($event)"
+            (keydown)="handleKeyDown($event)"
             required
-          />
+          ></textarea>
           <button class="btn btn-warning text-white" type="submit">Send</button>
         </form>
       </div>
