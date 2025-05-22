@@ -29,6 +29,8 @@ export const chatReducer = createReducer(
   })),
   on(ChatActions.sendMessageFailure, (state, { error }) => ({
     ...state,
+    typing: false,
+    messages: [...state.messages, { from: 'ai' as const, text: error }],
     error
   }))
 );
