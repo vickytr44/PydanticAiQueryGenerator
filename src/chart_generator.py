@@ -1,4 +1,6 @@
+import matplotlib
 import matplotlib.pyplot as plt
+matplotlib.use('Agg')
 
 def generate_chart_image(data, x_col, y_col, chart_type="bar", filename="output_chart"):
     if x_col not in data.columns or y_col not in data.columns:
