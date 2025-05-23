@@ -1,11 +1,19 @@
 import os
 from typing import Literal
 from dotenv import load_dotenv
-import dspy
 import pandas as pd
-
+import logfire
 
 load_dotenv(override=True)
+
+logfire.configure(
+    service_name="my_dspy_service",
+    send_to_logfire=True,
+)
+
+#logfire.install_auto_tracing(modules=["dspy"], min_duration=1, check_imported_modules="warn")
+
+import dspy
 
 model_name = os.getenv("MODEL_NAME")
 azure_endpoint= os.getenv("AZURE_OPENAI_ENDPOINT")
@@ -26,28 +34,30 @@ lm = dspy.LM(
 dspy.settings.configure(lm=lm, trace=["Test"])
 
 def perform_analysis(df, op, group_by_col=None, target_col=None):
+    with logfire.span("perform_analysis"):  # Add tracing span
+        print(f"Performing {op} on {target_col} grouped by {group_by_col}")
         # Normalize invalid group_by_col
-    if group_by_col is None or group_by_col == "N/A" or group_by_col.strip() == "":
-        if op in ["mean", "sum", "std", "var", "median", "nunique"]:
-            result = df[target_col].agg(op)
-            return pd.DataFrame({target_col: [result]})
-        else:
-            return (f"Unsupported operation without grouping: {op}")
+        if group_by_col is None or group_by_col == "N/A" or group_by_col.strip() == "":
+            if op in ["mean", "sum", "std", "Variance", "median", "nunique"]:
+                result = df[target_col].agg(op)
+                return pd.DataFrame({target_col: [result]}).to_dict(orient="records")
+            else:
+                return (f"Unsupported operation without grouping: {op}")
         
-    if op == "mean":
-        return df.groupby(group_by_col)[target_col].mean().reset_index()
-    elif op == "sum":
-        return df.groupby(group_by_col)[target_col].sum().reset_index()
-    elif op == "std":
-        return df.groupby(group_by_col)[target_col].std().reset_index()
-    elif op == "var":
-        return df.groupby(group_by_col)[target_col].var().reset_index()
-    elif op == "median":
-        return df.groupby(group_by_col)[target_col].median().reset_index()
-    elif op == "nunique":
-        return df.groupby(group_by_col)[target_col].nunique().reset_index()
-    else:
-        return (f"Unsupported operation: {op}")
+        if op == "mean":
+            return df.groupby(group_by_col)[target_col].mean().reset_index().to_dict(orient="records")
+        elif op == "sum":
+            return df.groupby(group_by_col)[target_col].sum().reset_index().to_dict(orient="records")
+        elif op == "std":
+            return df.groupby(group_by_col)[target_col].std().reset_index().to_dict(orient="records")
+        elif op == "Variance":
+            return df.groupby(group_by_col)[target_col].var().reset_index().to_dict(orient="records")
+        elif op == "median":
+            return df.groupby(group_by_col)[target_col].median().reset_index().to_dict(orient="records")
+        elif op == "nunique":
+            return df.groupby(group_by_col)[target_col].nunique().reset_index().to_dict(orient="records")
+        else:
+            return (f"Unsupported operation: {op}")
 
 class DataAnalysisSignature(dspy.Signature):
     user_prompt = dspy.InputField(desc="The user’s data analysis request")
@@ -65,8 +75,9 @@ class DataAnalysisClarifier(dspy.Module):
         self.analyzer = dspy.Predict(DataAnalysisSignature)
 
     def forward(self, user_prompt, df):
-        sample = df.head(5).to_dict(orient="records")
-        return self.analyzer(user_prompt=user_prompt, data_sample=sample)
+        with logfire.span("DataAnalysisClarifier.forward"):  # Add tracing span
+            sample = df.head(5).to_dict(orient="records")
+            return self.analyzer(user_prompt=user_prompt, data_sample=sample)
     
 # df = pd.read_excel("C:\\PydanticAiReporting\\FileStorage\\report.xlsx")
 # print(df)
@@ -78,6 +89,7 @@ class DataAnalysisClarifier(dspy.Module):
 
 # if result.needs_clarification == "YES":
 #     print({"clarification_needed": True, "question": result.clarification_question})
-
-# output_df = perform_analysis(df, result.operation, result.group_by_col, result.target_col)
-# print(output_df) 
+# with logfire.span("My DSPy Module"):
+#     output_df = perform_analysis(df, result.operation, result.group_by_col, result.target_col)
+    
+# print(output_df)

@@ -22,6 +22,11 @@ from pydantic_ai.messages import (
     UserPromptPart,
 )
 
+import logfire
+
+logfire.configure()
+logfire.instrument_pydantic_ai()
+
 server = MCPServerHTTP(url="http://127.0.0.1:8000/sse")
 
 chat_interface_agent = Agent(model, system_prompt= chat_interface_prompt, model_settings= {
@@ -45,7 +50,8 @@ def process_data_request(user_input: str) -> str:
     state = State(
         input=user_input,
         should_report_be_created=result.should_generate_report,
-        should_chart_be_created=result.should_generate_chart
+        should_chart_be_created=result.should_generate_chart,
+        aggregate_operation=result.aggregate_operation,
     )
     # Create the graph and run it
     query_generation_graph = Graph(nodes=(AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport, GenerateChart, PerformAggregation))

@@ -24,6 +24,11 @@ from DspyModules.signature_definition_using_dspy import error_resolver_model, va
 from graphql.error import GraphQLError
 from datetime import datetime
 
+import logfire
+
+logfire.configure()
+logfire.instrument_pydantic_ai()
+
 
 schema = full_schema
 
@@ -119,15 +124,15 @@ class ResolveError(BaseNode[State, None, str]):
 class ExecuteGraphQlQuery(BaseNode[State, None, str]):
     query_to_execute: str
 
-    async def run(self, ctx: GraphRunContext[State]) -> GenerateExcelReport | GenerateChart | End[str]:
+    async def run(self, ctx: GraphRunContext[State]) -> GenerateExcelReport | GenerateChart | PerformAggregation | End[str]:
 
         result = execute_graphql_query(self.query_to_execute)
         is_response_empty = IsResponseEmpty(result)
         if is_response_empty:
             return End("No data found for the given query.")
-        print("should report be created?", ctx.state.should_report_be_created)
         if not ctx.state.should_report_be_created and not ctx.state.should_chart_be_created:
             if ctx.state.aggregate_operation is not None:
+                print("Performing aggregation...")
                 return PerformAggregation(data_as_json=result)
             return End(result)
         
@@ -205,7 +210,7 @@ class PerformAggregation(BaseNode[State, None, str]):
         df = pd.read_excel(excel_buffer)
 
         clarifier = DataAnalysisClarifier()
-        result = clarifier(input, df)
+        result = clarifier(ctx.state.input, df)
 
         print(result)
 

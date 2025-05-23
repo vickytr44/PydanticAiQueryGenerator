@@ -2,7 +2,10 @@ import asyncio
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerHTTP
 from model import model
+import logfire
 
+logfire.configure()
+logfire.instrument_pydantic_ai()
 
 server = MCPServerHTTP(url="http://127.0.0.1:8000/sse")
 metadata_provider_agent = Agent(model, mcp_servers=[server], system_prompt="Use the tools to achieve your task.")
