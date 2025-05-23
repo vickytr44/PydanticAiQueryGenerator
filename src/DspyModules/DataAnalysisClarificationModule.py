@@ -35,7 +35,7 @@ dspy.settings.configure(lm=lm, trace=["Test"])
 
 def perform_analysis(df, op, group_by_col=None, target_col=None):
     with logfire.span("perform_analysis"):  # Add tracing span
-        print(f"Performing {op} on {target_col} grouped by {group_by_col}")
+        logfire.info(f"Performing {op} on {target_col} grouped by {group_by_col}")
         # Normalize invalid group_by_col
         if group_by_col is None or group_by_col == "N/A" or group_by_col.strip() == "":
             if op in ["mean", "sum", "std", "Variance", "median", "nunique"]:
@@ -75,9 +75,12 @@ class DataAnalysisClarifier(dspy.Module):
         self.analyzer = dspy.Predict(DataAnalysisSignature)
 
     def forward(self, user_prompt, df):
-        with logfire.span("DataAnalysisClarifier.forward"):  # Add tracing span
+        with logfire.span("DataAnalysisClarifier.forward") as span:  # Add tracing span
             sample = df.head(5).to_dict(orient="records")
-            return self.analyzer(user_prompt=user_prompt, data_sample=sample)
+            logfire.info(f"User prompt: {user_prompt}, Sample data: {sample}")
+            result = self.analyzer(user_prompt=user_prompt, data_sample=sample)
+            logfire.info(f"Analyzer result: {result}")
+            return result
     
 # df = pd.read_excel("C:\\PydanticAiReporting\\FileStorage\\report.xlsx")
 # print(df)
