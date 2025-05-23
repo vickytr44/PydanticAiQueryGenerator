@@ -47,14 +47,17 @@ def validate_graphql_query_for_workflow(query: str, schema_str: str) -> str | No
 
 # query = """
 # {
-#   bills(where: {amount: {gt: 1000}, OR: [{customer: {name: {nstartsWith: "v"}}, {account: {type: {eq: DOMESTIC}}}]}){
-#     amount
-#     dueDate
-#     number
-#     month
-#     customer {
-#       name
-#       type
+#   bills(where: { amount: { gt: "average_bill_amount" } }) {
+#     nodes {
+#       id
+#       number
+#       month
+#       isActive
+#       status
+#       dueDate
+#       amount
+#       customerId
+#       accountId
 #     }
 #   }
 # }
