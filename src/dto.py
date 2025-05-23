@@ -41,6 +41,11 @@ class ChatRequest(BaseModel):
         description="The message to send to the AI assistant",
         example="Generate a report about sales data"
     )
+    session_id: str = Field(
+        ...,
+        description="The session ID for the chat history. Use a unique value per user or conversation.",
+        example="chat_session_00001"
+    )
 
 class ChatResponse(BaseModel):
     response: str = Field(

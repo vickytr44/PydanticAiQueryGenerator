@@ -10,6 +10,7 @@ from dto import ChatRequest, ChatResponse
 from model import model
 from pydantic_ai.mcp import MCPServerHTTP
 from prompt import chat_interface_prompt
+from chat_history_manager import ChatHistoryManager
 
 from workflow_graph import AssignEntitySchema, ExtractReportReuest, GenerateChart, GenerateGraphQlQuery, PerformAggregation, ResolveError, State, validateGraphQlQuery, ExecuteGraphQlQuery, GenerateExcelReport
 
@@ -51,6 +52,9 @@ def process_data_request(user_input: str) -> str:
     result = query_generation_graph.run_sync(AssignEntitySchema(), state=state)
     return result.output
 
+chat_history_manager = ChatHistoryManager()  # Use ChatHistoryManager for API mode 
+
+# Only used for CLI mode
 chat_history : list[ModelMessage] = []  # Use a list to store messages 
 
 async def main():
@@ -91,10 +95,15 @@ app.add_middleware(
     description="Send a message to the AI assistant and get a response. The assistant can generate GraphQL queries and reports based on your request."
 )
 async def chat_endpoint(request: ChatRequest):
+    session_id = request.session_id 
+    # Retrieve history for this session
+    history = chat_history_manager.get_history(session_id)
     async with chat_interface_agent.run_mcp_servers():
-        result = await chat_interface_agent.run(request.message, message_history=chat_history)
-    chat_history.append(ModelRequest(parts=[UserPromptPart(content=request.message)]))
-    chat_history.append(ModelResponse(parts=[TextPart(content=result.data)]))
+        result = await chat_interface_agent.run(request.message, message_history=history)
+    # Add user and AI messages to the session history
+    from pydantic_ai.messages import ModelRequest, ModelResponse, TextPart, UserPromptPart
+    chat_history_manager.add_message(session_id, ModelRequest(parts=[UserPromptPart(content=request.message)]))
+    chat_history_manager.add_message(session_id, ModelResponse(parts=[TextPart(content=result.data)]))
     return {"response": result.data}
 
 @app.get("/downloadexcelreport/{report_id}")
