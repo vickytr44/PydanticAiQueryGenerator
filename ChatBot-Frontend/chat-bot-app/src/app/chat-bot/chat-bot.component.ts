@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import * as ChatActions from '../../state/actions/chat-bot.actions';
 import { selectChatMessages, selectTypingStatus } from '../../state/selectors/chat-bot.selectors';
 import { LinkifyBeautifyPipe } from '../../helper/linkifyBeautify.pipe';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-chat-bot',
@@ -17,6 +18,7 @@ export class ChatBotComponent {
   message = '';
   messages$;
   typing$;
+  sessionId = uuidv4();
 
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
@@ -26,11 +28,31 @@ export class ChatBotComponent {
   }
 
   ngAfterViewInit() {
+    setTimeout(() => {
+      this.sendWelcomeMessage();
+    }, 300);
+
     this.messages$.subscribe(() => {
       setTimeout(() => this.scrollToBottom(), 100);
     });
   }
 
+  startNewSession(): void {
+    this.sessionId = uuidv4(); // new session id
+    this.store.dispatch(ChatActions.resetChat()); // assuming you have a reset action
+    setTimeout(() => {
+      this.sendWelcomeMessage();
+    }, 200);
+  }
+
+  sendWelcomeMessage(): void {
+    this.store.dispatch(ChatActions.addMessage({
+      message: {
+        from: 'ai',
+        text: 'Hi..! How can I help you?'
+      }
+    }));
+  }
 
   sendMessage(): void {
     const trimmedMessage = this.message.trim();

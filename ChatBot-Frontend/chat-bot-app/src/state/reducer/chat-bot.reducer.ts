@@ -32,5 +32,12 @@ export const chatReducer = createReducer(
     typing: false,
     messages: [...state.messages, { from: 'ai' as const, text: error }],
     error
+  })),
+  on(ChatActions.resetChat, () => ({
+    ...initialState
+  })),
+  on(ChatActions.addMessage, (state, { message }) => ({
+    ...state,
+    messages: [...state.messages, message]
   }))
 );
