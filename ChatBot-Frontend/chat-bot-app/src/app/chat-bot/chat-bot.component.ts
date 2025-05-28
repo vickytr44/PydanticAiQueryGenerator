@@ -57,7 +57,7 @@ export class ChatBotComponent {
   sendMessage(): void {
     const trimmedMessage = this.message.trim();
     if (trimmedMessage) {
-      this.store.dispatch(ChatActions.sendMessage({ request: { message: trimmedMessage } }));
+      this.store.dispatch(ChatActions.sendMessage({ request: { message: trimmedMessage, session_id: this.sessionId } }));
       this.message = '';
     }
   }
