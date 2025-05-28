@@ -49,6 +49,10 @@ def execute_graphql_query(query: str):
     try:
         gql_query = gql(query)
         response = client.execute(gql_query)
+        print(response)
+        # Check for 'errors' in the response and return if present
+        if 'errors' in response:
+            return {'errors': response['errors']}
         return response.get("data", response)  # Return only 'data' if present
     except Exception as e:
         return {"error": str(e)}  # Return error message if any

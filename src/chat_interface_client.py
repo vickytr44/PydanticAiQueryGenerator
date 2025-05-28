@@ -41,11 +41,8 @@ def process_data_request(user_input: str) -> str:
     Args:
         user_input: A plain English statement fully describing the user's request, including any instructions to generate a report, chart, or just fetch data.
     """
-    print("Generating GraphQL query...", user_input)
-
     analyzer_module = AnalyzeUserRequestModule()
     result = analyzer_module(input=user_input)
-    print("Analysis:", result)
 
     state = State(
         input=user_input,

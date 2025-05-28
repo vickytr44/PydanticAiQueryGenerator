@@ -86,10 +86,8 @@ class validateGraphQlQuery(BaseNode[State, None, str]):
 
     async def run(self, ctx: GraphRunContext[State]) -> ExecuteGraphQlQuery | ResolveError:
 
-        print("Validating query...", self.query_to_be_validated, "retry count:", ctx.state.retry_count)
         result = validate_graphql_query_for_workflow(query=self.query_to_be_validated, schema_str=schema)
 
-        print("Validation result:", result)
         ctx.state.is_query_validated = True
         if result is None:
             return ExecuteGraphQlQuery(self.query_to_be_validated)
@@ -127,12 +125,13 @@ class ExecuteGraphQlQuery(BaseNode[State, None, str]):
     async def run(self, ctx: GraphRunContext[State]) -> GenerateExcelReport | GenerateChart | PerformAggregation | End[str]:
 
         result = execute_graphql_query(self.query_to_execute)
+        if 'errors' in result:
+            return End(f"GraphQL query execution error: {result['errors']}")
         is_response_empty = IsResponseEmpty(result)
         if is_response_empty:
             return End("No data found for the given query.")
         if not ctx.state.should_report_be_created and not ctx.state.should_chart_be_created:
             if ctx.state.aggregate_operation is not None:
-                print("Performing aggregation...")
                 return PerformAggregation(data_as_json=result)
             return End(result)
         
@@ -147,7 +146,6 @@ class GenerateChart(BaseNode[State, None, str]):
     data_as_json: Any
 
     async def run(self, ctx: GraphRunContext[State]) -> End[str]:
-        print("Generating chart...", self.data_as_json)
 
         schema_module = SchemaInferenceModule()
         # Call the module
@@ -181,7 +179,6 @@ class GenerateExcelReport(BaseNode[State, None, str]):
     data_as_json: Any
 
     async def run(self, ctx: GraphRunContext[State]) -> End[str]:
-        print("Generating Excel report...", self.data_as_json)
 
         schema_module = SchemaInferenceModule()
         # Call the module
@@ -200,7 +197,6 @@ class PerformAggregation(BaseNode[State, None, str]):
     data_as_json: Any
 
     async def run(self, ctx: GraphRunContext[State]) -> End[str]:
-        print("Performing aggregation...", ctx.state.aggregate_operation)
 
         schema_module = SchemaInferenceModule()
         # Call the module
@@ -212,7 +208,6 @@ class PerformAggregation(BaseNode[State, None, str]):
         clarifier = DataAnalysisClarifier()
         result = clarifier(ctx.state.input, df)
 
-        print(result)
 
         if result.needs_clarification == True:
             return({"clarification_needed": True, "question": result.clarification_question})
