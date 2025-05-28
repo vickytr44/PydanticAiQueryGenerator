@@ -29,8 +29,8 @@ class ChartClarificationSignature(dspy.Signature):
     data_sample = dspy.InputField(desc="A preview of the data")
     
     chart_type = dspy.OutputField(desc="Chart type: bar, pie, line")
-    x_col = dspy.OutputField(desc="X-axis column value in the data")
-    y_col = dspy.OutputField(desc="Y-axis column (for bar/line), or value column (for pie) in the data")
+    x_col = dspy.OutputField(desc="X-axis column value. Must be an exact column name from the data sample.")
+    y_col = dspy.OutputField(desc="Y-axis column (for bar/line), or value column (for pie). Must be an exact column name from the data sample.")
     needs_clarification: bool = dspy.OutputField(desc="True if input is vague, else false")
     clarification_question = dspy.OutputField(desc="Ask this if input is unclear")
 
