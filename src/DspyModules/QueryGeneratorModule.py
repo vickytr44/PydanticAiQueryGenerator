@@ -1,11 +1,11 @@
 import os
 from dotenv import load_dotenv
 import dspy
-from dto import AndCondition, OrCondition, RelatedEntity, ReportRequest, SortCondition  
-from Schema.account_schema_graphql import account_schema_graphql
-from Schema.bill_schema_graphql import bill_schema_graphql
-from Schema.full_chema_graphql import full_schema
-from Examples.query_generator_examples import example_list
+from src.Examples.query_generator_examples import example_list
+from graphql import build_schema, parse, validate
+
+from src.dto import AndCondition, OrCondition, RelatedEntity, ReportRequest
+from src.Schema.full_chema_graphql import full_schema
 
 load_dotenv(override=True)
 
@@ -28,6 +28,15 @@ lm = dspy.LM(
 dspy.settings.configure(lm=lm, trace=["Test"])
 
 
+def is_valid_against_schema(query: str, schema_str: str) -> bool:
+    try:
+        schema = build_schema(schema_str)
+        document = parse(query)
+        errors = validate(schema, document)
+        return not errors
+    except Exception:
+        return False
+
 class QueryGenerator(dspy.Module):
     def __init__(self):
         super().__init__()
@@ -47,7 +56,9 @@ class QueryGenerator(dspy.Module):
         # """
 
     def forward(self, graphql_schema, request):
-        return self.generator(graphql_schema=graphql_schema, request=request)
+        result = self.generator(graphql_schema=graphql_schema, request=request)
+        # dspy.Assert(is_valid_against_schema(result.query), "Generated GraphQL query has a syntax error.")
+        return result
 
 
 class QueryGenerationSignature(dspy.Signature):
@@ -59,8 +70,6 @@ class QueryGenerationSignature(dspy.Signature):
 
 
 # query_model = QueryGenerator()
-
-# query_model.generator.examples = [few_shot_example1,few_shot_example2]
 
 # report_request = ReportRequest(
 #     main_entity='Bill',
@@ -79,7 +88,7 @@ class QueryGenerationSignature(dspy.Signature):
 # )
 
 # result = query_model(
-#     graphql_schema= bill_schema_graphql ,
+#     graphql_schema= full_schema ,
 #     request = report_request
 # )
 

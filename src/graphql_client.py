@@ -1,6 +1,8 @@
 import warnings
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
+import logfire
+logfire.configure()
 
 # Define the GraphQL endpoint
 transport = RequestsHTTPTransport(
@@ -47,14 +49,17 @@ def IsResponseEmpty(response_json: dict) -> bool:
 
 def execute_graphql_query(query: str):
     try:
-        gql_query = gql(query)
-        response = client.execute(gql_query)
-        print(response)
-        # Check for 'errors' in the response and return if present
-        if 'errors' in response:
-            return {'errors': response['errors']}
-        return response.get("data", response)  # Return only 'data' if present
+        with logfire.span("perform_analysis"):  # Add tracing span            
+            logfire.info(f"About to execute GraphQL query: {query}")  # <-- Add this
+            gql_query = gql(query)
+            response = client.execute(gql_query)
+            logfire.info(f"Response for Executing GraphQL query: {query} is {response}")
+            # Always log before any return
+            if 'errors' in response:
+                return {'errors': response['errors']}
+            return response.get("data", response)  # Return only 'data' if present
     except Exception as e:
+        logfire.error(f"Error executing GraphQL query: {e}")
         return {"error": str(e)}  # Return error message if any
 
 

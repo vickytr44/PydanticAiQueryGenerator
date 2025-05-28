@@ -1,7 +1,7 @@
 import dspy
-import Schema.bill_schema_graphql as bill_schema_graphql
-import Schema.full_chema_graphql as full_schema
-from dto import AndCondition, OrCondition, RelatedEntity, ReportRequest, SortCondition
+import src.Schema.bill_schema_graphql as bill_schema_graphql
+import src.Schema.full_chema_graphql as full_schema
+from src.dto import AndCondition, OrCondition, RelatedEntity, ReportRequest, SortCondition
 
 
 few_shot_example1 = dspy.Example(
