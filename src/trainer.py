@@ -1,46 +1,59 @@
 import dspy
 from dspy.teleprompt import BootstrapFewShot
+from dspy.evaluate.metrics import answer_exact_match
 
-import Schema.account_schema_graphql as account_schema_graphql
-from Schema.bill_schema_graphql import bill_schema_graphql
+from DspyModules.QueryGeneratorModule import QueryGenerator
+from Schema.full_chema_graphql import full_schema
 from dto import ReportRequest, AndCondition, OrCondition, RelatedEntity, SortCondition
-from DspyModules.signature_definition_using_dspy import extract_report_request
+from Examples.query_generator_examples import example_list
     
-few_shot_example = dspy.Example(
-    input={
-        'user_input': "Get bill amount and month along with customer age and account number where amount is greater than 1000 and (customer name starts with 'v' or account type is domestic) ordered by due date descending",
-        'graphQl_schema': bill_schema_graphql
-    },
-    output=ReportRequest(
-        main_entity="bills",
-        fields_to_fetch_from_main_entity=["amount", "month"],
-        and_conditions=[
-            AndCondition(entity="bills", field="amount", operation="gt", value=1000),
-        ],
-        or_conditions=[
-            OrCondition(entity="account", field="type", operation="eq", value="DOMESTIC"),            
-            OrCondition(entity="customer", field="name", operation="startsWith", value="v")
-        ],
-        related_entity_fields=[
-            RelatedEntity(entity="customer", fields=["age"]),
-            RelatedEntity(entity="account", fields=["number"])
-        ],
-        sort_field_order=[
-            SortCondition(entity="bills", field="due_date", order="desc")
-        ]
-    )
+def custom_exact_match(example, prediction, trace=None):
+    print("prediction",prediction, example)
+    return prediction.query.strip() == example.query.strip()
+
+query_model = QueryGenerator()
+
+tuner = BootstrapFewShot(metric=custom_exact_match, max_labeled_demos= 5, max_rounds=3)
+
+dataset = [dspy.Example(graphql_schema = full_schema, request=ex.input['request'], query=ex.output).with_inputs("graphql_schema","request") for ex in example_list]
+
+trained_query_generator = tuner.compile(query_model, trainset= dataset)
+
+report_request = ReportRequest(
+    main_entity='Bill',
+    fields_to_fetch_from_main_entity=['amount', 'dueDate', 'number', 'month'],
+    or_conditions=[
+        OrCondition(entity='Customer', field='name', operation='startsWith', value='v'),
+        OrCondition(entity='Account', field='type', operation='eq', value='DOMESTIC')
+    ],
+    and_conditions=[
+        AndCondition(entity='Bill', field='amount', operation='gt', value=500)
+    ],
+    related_entity_fields=[
+        RelatedEntity(entity='Customer', fields=['name'])
+    ],
+    sort_field_order=None
 )
 
-trainset = [
-    few_shot_example
-]
+report_request2 =ReportRequest (
+    main_entity='Bill',
+    fields_to_fetch_from_main_entity=['amount'],
+    or_conditions=None,
+    and_conditions=None,
+    related_entity_fields=None,
+    sort_field_order=[
+        SortCondition(
+            entity='Bill',
+            field='amount',
+            order='DESC',
+        ),
+    ],
+)
 
-tuner = BootstrapFewShot
 
-new_extract_report_request = tuner.compile(extract_report_request, trainset=trainset)
+result = trained_query_generator(
+    graphql_schema= full_schema ,
+    request = report_request2
+)
 
-
-# Generate queries based on user input
-input="get all accounts number and type along with customer name and age where customer name starts with 'v' and age is greater than 30"
-result = new_extract_report_request(user_input=input, graphQl_schema=account_schema_graphql)
-print(result.report_request)
+print(result.query)

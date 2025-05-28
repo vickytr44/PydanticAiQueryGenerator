@@ -3,8 +3,9 @@ from dotenv import load_dotenv
 import dspy
 from src.Examples.query_generator_examples import example_list
 from graphql import build_schema, parse, validate
+from dspy.teleprompt import BootstrapFewShot
 
-from src.dto import AndCondition, OrCondition, RelatedEntity, ReportRequest
+from src.dto import AndCondition, OrCondition, RelatedEntity, ReportRequest, SortCondition
 from src.Schema.full_chema_graphql import full_schema
 
 load_dotenv(override=True)
@@ -27,6 +28,9 @@ lm = dspy.LM(
 
 dspy.settings.configure(lm=lm, trace=["Test"])
 
+def custom_exact_match(example, prediction, trace=None):
+    print("prediction",prediction, example)
+    return prediction.query.strip() == example.query.strip()
 
 def is_valid_against_schema(query: str, schema_str: str) -> bool:
     try:
@@ -45,19 +49,28 @@ class QueryGenerator(dspy.Module):
 
         self.generator.examples = example_list
         
-        # self.generator.prompt_template = """
-        # GraphQL Schema:
-        # {graphql_schema}
+        self.generator.prompt_template = """
+        You are a GraphQL query generator. Follow this schema strictly.
 
-        # User Request:
-        # {request}
+        GraphQL Schema:
+        {graphql_schema}
 
-        # Generate a valid GraphQL query matching the schema and request. Return only the query.
-        # """
+        Rules:
+        1. Use the correct argument structure from the schema. Do NOT invent generic GraphQL patterns.
+        2. Use `order: {{ fieldName: ASC|DESC }}` format if sorting is required.
+        3. Do not use pagination (`first`, `limit`, etc.) unless explicitly asked.
+        4. Only use fields and arguments defined in the schema.
+        5. Return ONLY the query. No markdown, explanation, or comments.
+
+        User Request:
+        {request}
+
+        Query:
+        """
 
     def forward(self, graphql_schema, request):
         result = self.generator(graphql_schema=graphql_schema, request=request)
-        # dspy.Assert(is_valid_against_schema(result.query), "Generated GraphQL query has a syntax error.")
+        # dspy.Suggest(is_valid_against_schema(result.query), "Generated GraphQL query has a syntax error.")
         return result
 
 
@@ -68,28 +81,51 @@ class QueryGenerationSignature(dspy.Signature):
     query : str = dspy.OutputField(desc="The GraphQL query only, with no explanation or surrounding text.")
 
 
+query_model = QueryGenerator()
+
+tuner = BootstrapFewShot(metric=custom_exact_match, max_labeled_demos= 5, max_rounds=3)
+
+dataset = [dspy.Example(graphql_schema = full_schema, request=ex.input['request'], query=ex.output).with_inputs("graphql_schema","request") for ex in example_list]
+
+trained_query_generator = tuner.compile(query_model, trainset= dataset)
+
 
 # query_model = QueryGenerator()
 
-# report_request = ReportRequest(
+# # report_request = ReportRequest(
+# #     main_entity='Bill',
+# #     fields_to_fetch_from_main_entity=['amount', 'dueDate', 'number', 'month'],
+# #     or_conditions=[
+# #         OrCondition(entity='Customer', field='name', operation='startsWith', value='v'),
+# #         OrCondition(entity='Account', field='type', operation='eq', value='DOMESTIC')
+# #     ],
+# #     and_conditions=[
+# #         AndCondition(entity='Bill', field='amount', operation='gt', value=500)
+# #     ],
+# #     related_entity_fields=[
+# #         RelatedEntity(entity='Customer', fields=['name'])
+# #     ],
+# #     sort_field_order=None
+# # )
+
+# report_request2 =ReportRequest (
 #     main_entity='Bill',
-#     fields_to_fetch_from_main_entity=['amount', 'dueDate', 'number', 'month'],
-#     or_conditions=[
-#         OrCondition(entity='Customer', field='name', operation='startsWith', value='v'),
-#         OrCondition(entity='Account', field='type', operation='eq', value='DOMESTIC')
+#     fields_to_fetch_from_main_entity=['amount'],
+#     or_conditions=None,
+#     and_conditions=None,
+#     related_entity_fields=None,
+#     sort_field_order=[
+#         SortCondition(
+#             entity='Bill',
+#             field='amount',
+#             order='DESC',
+#         ),
 #     ],
-#     and_conditions=[
-#         AndCondition(entity='Bill', field='amount', operation='gt', value=500)
-#     ],
-#     related_entity_fields=[
-#         RelatedEntity(entity='Customer', fields=['name'])
-#     ],
-#     sort_field_order=None
 # )
 
 # result = query_model(
 #     graphql_schema= full_schema ,
-#     request = report_request
+#     request = report_request2
 # )
 
 # print(result.query)

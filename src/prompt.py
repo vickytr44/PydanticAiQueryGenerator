@@ -215,13 +215,20 @@ And the user request:
 {user_input}
 
 Generate a structured ReportRequest object capturing:
-- Identify the main entity the user wants to fetch
+- Identify the main entity the user wants to fetch.
 - Identify which fields the user wants from that main entity.
 - Identify related entities and their fields requested.
 - Classify conditions into:
-    - AND conditions: all must be true
-    - OR conditions: any can be true
+    - AND conditions: all must be true.
+    - OR conditions: any can be true.
 - Classify sort orders if mentioned (optional).
+
+Important constraints:
+- Do **not** use nested field names or dot notation (e.g., `relatedEntity.fieldName` is invalid).
+- Use only field names that are **directly defined** on the main entity or via valid filter objects.
+- If filtering by a related entity, use the appropriate linking field (e.g., `relatedEntityId`) or use a predefined filter object (e.g., `relatedEntity_filter`), not dot notation.
+- Use only valid fields and types based on the provided GraphQL schema.
+- Do not invent fields or types.
 
 Return only the ReportRequest object in valid Python syntax.
 """

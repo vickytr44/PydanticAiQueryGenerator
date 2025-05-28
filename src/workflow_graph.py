@@ -12,7 +12,7 @@ from DspyModules.DataAnalysisClarificationModule import DataAnalysisClarifier, p
 from chart_generator import generate_chart_image
 from DspyModules.ErrorResolverModule import ErrorResolverModule
 from DspyModules.JsonToExcelConverter import SchemaInferenceModule
-from DspyModules.QueryGeneratorModule import QueryGenerator
+from DspyModules.QueryGeneratorModule import QueryGenerator, trained_query_generator
 from DspyModules.ReportRequestExtractorModule import ReportRequestExtractor
 from dto import ReportRequest
 from graphql_client import IsResponseEmpty, execute_graphql_query
@@ -72,8 +72,8 @@ class GenerateGraphQlQuery(BaseNode[State, None, str]):
 
     async def run(self, ctx: GraphRunContext[State]) -> validateGraphQlQuery:
 
-        query_model = QueryGenerator()
-        result = query_model(
+        # query_model = QueryGenerator()
+        result = trained_query_generator(
             graphql_schema= schema ,
             request = self.user_request
         )
