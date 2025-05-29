@@ -1,7 +1,7 @@
 <div class="chat-container">
     <div class="card shadow">
-      <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">AI Chat-bot</h5>
+      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Report Assistant</h5>
         <button class="btn btn-sm p-1" (click)="startNewSession()" title="New Session">
             <i class="bi bi-plus-lg text-white fs-4"></i>
         </button>
@@ -10,7 +10,7 @@
       <div class="card-body" #scrollContainer>
         <div *ngFor="let msg of messages$ | async" class="mb-3" [ngClass]="msg.from === 'user' ? 'message-row user' : 'message-row ai'">
           <div class="message-bubble">
-            <span class="icon">{{ msg.from === 'user' ? '👤' : '🤖' }}</span>
+            <i class="icon bi" [ngClass]="msg.from === 'user' ? 'bi-person-circle text-primary' : 'bi-robot text-secondary'"></i>
             <div class="message-content" [innerHTML]="msg.text | linkifyBeautify"></div>
           </div>
         </div>
