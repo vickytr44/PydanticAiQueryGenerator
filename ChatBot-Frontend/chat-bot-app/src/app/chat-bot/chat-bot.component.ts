@@ -75,6 +75,25 @@ export class ChatBotComponent {
     }
   }
 
+  shouldShowRetry(text: string): boolean {
+    const lowerText = text.toLowerCase();
+    return lowerText.includes('sorry') || lowerText.includes('please try again later');
+  }
+  
+  shouldShowYesNo(text: string): boolean {
+    const lowerText = text.toLowerCase();
+    return lowerText.includes('could') || lowerText.includes('would');
+  }
+  
+  sendRetry() {
+    this.sendMessageWithText('retry');
+  }
+  
+  sendMessageWithText(text: string) {
+    this.message = text;
+    this.sendMessage();
+  }
+
   private scrollToBottom(): void {
     try {
       this.scrollContainer.nativeElement.scroll({

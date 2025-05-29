@@ -42,7 +42,21 @@
         20% { opacity: 1; }
         100% { opacity: 0.2; }
       }
-  
+
+      button.btn-outline-danger,
+      button.btn-outline-primary,
+      button.btn-outline-secondary {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+      }
+
+      .suggestion-buttons {
+        margin-top: 0.5rem;
+        padding-left: 2.5rem; // match icon/message left margin
+      }
+
+
       .card-body {
         height: calc(100% - 160px);
         overflow-y: auto;

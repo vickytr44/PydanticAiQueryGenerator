@@ -13,6 +13,17 @@
             <i class="icon bi" [ngClass]="msg.from === 'user' ? 'bi-person-circle text-primary' : 'bi-robot text-secondary'"></i>
             <div class="message-content" [innerHTML]="msg.text | linkifyBeautify"></div>
           </div>
+
+          <div *ngIf="msg.from === 'ai'" class="suggestion-buttons mt-2 ps-2">
+            <div *ngIf="shouldShowRetry(msg.text)" class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-danger" (click)="sendRetry()">Retry</button>
+            </div>
+          
+            <div *ngIf="shouldShowYesNo(msg.text)" class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary" (click)="sendMessageWithText('Yes')">Yes</button>
+              <button class="btn btn-sm btn-outline-secondary" (click)="sendMessageWithText('No')">No</button>
+            </div>
+          </div>
         </div>
   
         <div *ngIf="typing$ | async">
