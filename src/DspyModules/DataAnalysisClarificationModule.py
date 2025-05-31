@@ -34,15 +34,17 @@ lm = dspy.LM(
 dspy.settings.configure(lm=lm, trace=["Test"])
 
 def perform_analysis(df, op, group_by_col=None, target_col=None):
-    with logfire.span("perform_analysis"):  # Add tracing span
-        logfire.info(f"Performing {op} on {target_col} grouped by {group_by_col}")
+    with logfire.span("perform aggregate operation"):  # Add tracing span
         # Normalize invalid group_by_col
         if group_by_col is None or group_by_col == "N/A" or group_by_col.strip() == "":
             if op in ["mean", "sum", "std", "Variance", "median", "nunique"]:
-                result = df[target_col].agg(op)
-                return pd.DataFrame({target_col: [result]}).to_dict(orient="records")
+                result = pd.DataFrame({target_col: [df[target_col].agg(op)]}).to_dict(orient="records")
+                logfire.info(f"Performing {op} on {target_col} grouped by {group_by_col}, result: {result}")
+                return result
             else:
-                return (f"Unsupported operation without grouping: {op}")
+                WarningText = f"Unsupported operation without grouping: {op}"
+                logfire.warning(WarningText)
+                return WarningText
         
         if op == "mean":
             return df.groupby(group_by_col)[target_col].mean().reset_index().to_dict(orient="records")
@@ -75,11 +77,10 @@ class DataAnalysisClarifier(dspy.Module):
         self.analyzer = dspy.Predict(DataAnalysisSignature)
 
     def forward(self, user_prompt, df):
-        with logfire.span("DataAnalysisClarifier.forward") as span:  # Add tracing span
+        with logfire.span("DataAnalysisClarifier") as span:  # Add tracing span
             sample = df.head(5).to_dict(orient="records")
-            logfire.info(f"User prompt: {user_prompt}, Sample data: {sample}")
             result = self.analyzer(user_prompt=user_prompt, data_sample=sample)
-            logfire.info(f"Analyzer result: {result}")
+            logfire.info(f"User prompt: {user_prompt}, Sample data: {sample}, Analyzer result: {result}")
             return result
     
 # df = pd.read_excel("C:\\PydanticAiReporting\\FileStorage\\report.xlsx")
