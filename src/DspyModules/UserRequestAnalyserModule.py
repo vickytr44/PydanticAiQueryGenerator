@@ -2,7 +2,12 @@ import os
 from typing import Literal
 from dotenv import load_dotenv
 import dspy
+import logfire
 
+logfire.configure(
+    service_name="my_dspy_service",
+    send_to_logfire=True,
+)
 
 load_dotenv(override=True)
 
@@ -51,7 +56,11 @@ class AnalyzeUserRequestModule(dspy.Module):
 
     def forward(self, input: str):
         # Call the model with the inputs and return the output
-        return self.analyzer(user_input=input)
+        with logfire.span("AnalyzeUserRequestModule"):
+            result = self.analyzer(user_input=input)
+            logfire.info(f"Analyzing user input: {input}, result: {result}")
+            # Return the result of the analysis
+            return result
 
 
 # chart_agent = AnalyzeUserRequestModule()

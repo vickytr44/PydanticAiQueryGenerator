@@ -34,6 +34,7 @@ lm = dspy.LM(
 dspy.settings.configure(lm=lm, trace=["Test"])
 
 def perform_analysis(df, op, group_by_col=None, target_col=None):
+    df.columns = df.columns.str.strip()
     with logfire.span("perform aggregate operation"):  # Add tracing span
         # Normalize invalid group_by_col
         if group_by_col is None or group_by_col == "N/A" or group_by_col.strip() == "":
