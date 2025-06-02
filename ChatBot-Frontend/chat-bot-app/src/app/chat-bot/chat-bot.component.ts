@@ -95,6 +95,8 @@ export class ChatBotComponent {
     if (trimmedMessage) {
       this.store.dispatch(ChatActions.sendMessage({ request: { message: trimmedMessage, session_id: this.sessionId } }));
       this.message = '';
+      this.showSuggestions = false; // Hide suggestions after first message is sent
+      this.hasInputBeenFocused = true;
     }
   }
 
