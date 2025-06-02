@@ -25,7 +25,7 @@ export class ChatBotComponent {
 
   readonly suggestions: string[] = [
     'Retrieve related tables and their corresponding fields for the available tables.',
-    'Generate a comprehensive report for all account records.',
+    'Generate a report for all account records.',
     'Visualize monthly bill amounts using a bar chart.'
   ];
 
