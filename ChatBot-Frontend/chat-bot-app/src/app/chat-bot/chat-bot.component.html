@@ -14,14 +14,11 @@
             <div class="message-content" [innerHTML]="msg.text | linkifyBeautify"></div>
           </div>
 
-          <div *ngIf="msg.from === 'ai'" class="suggestion-buttons mt-2 ps-2">
+          <div *ngIf="msg.from === 'ai'" class="suggestion-buttons">
             <div *ngIf="shouldShowRetry(msg.text)" class="d-flex gap-1">
-              <button class="btn btn-sm btn-outline-danger" (click)="sendRetry()">Retry</button>
-            </div>
-          
-            <div *ngIf="shouldShowYesNo(msg.text)" class="d-flex gap-2">
-              <button class="btn btn-sm btn-outline-primary" (click)="sendMessageWithText('Yes')">Yes</button>
-              <button class="btn btn-sm btn-outline-secondary" (click)="sendMessageWithText('No')">No</button>
+              <button class="btn btn-sm p-1" (click)="sendRetry()" data-bs-toggle="tooltip" data-bs-placement="top" title="Try Again">
+                <i class="bi bi-arrow-clockwise fs-4"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -30,6 +27,15 @@
           <div class="typing-indicator">Thinking<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>
         </div>
       </div>
+
+      <div *ngIf="showSuggestions" class="quick-suggestions-container">
+        <p class="quick-title">Quick Suggestions:</p>
+        <div *ngFor="let suggestion of suggestions" class="mb-2">
+          <button class="quick-suggestion-button" (click)="handleSuggestionClick(suggestion)">
+            {{ suggestion }}
+          </button>
+        </div>
+      </div>      
   
       <div class="card-footer">
         <form (ngSubmit)="sendMessage()" class="d-flex gap-2">

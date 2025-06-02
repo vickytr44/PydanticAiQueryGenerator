@@ -19,6 +19,17 @@ export class ChatBotComponent {
   messages$;
   typing$;
   sessionId = uuidv4();
+  showSuggestions = true;
+  hasInputBeenFocused = false;
+  bootstrap: any;
+
+  readonly suggestions: string[] = [
+    'Retrieve related tables and their corresponding fields for the available tables.',
+    'Generate a comprehensive report for all account records.',
+    'Visualize monthly bill amounts using a bar chart.'
+  ];
+
+
 
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
@@ -28,6 +39,11 @@ export class ChatBotComponent {
   }
 
   ngAfterViewInit() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach((tooltipTriggerEl) => {
+      new this.bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
     setTimeout(() => {
       this.sendWelcomeMessage();
     }, 300);
@@ -35,11 +51,31 @@ export class ChatBotComponent {
     this.messages$.subscribe(() => {
       setTimeout(() => this.scrollToBottom(), 100);
     });
+
+    setTimeout(() => {
+      const input = document.querySelector('textarea[name="message"]');
+      if (input) {
+        input.addEventListener('focus', () => {
+          if (!this.hasInputBeenFocused) {
+            this.showSuggestions = true;
+            this.hasInputBeenFocused = true;
+          }
+        });
+
+        input.addEventListener('keydown', () => {
+          if (!this.hasInputBeenFocused) {
+            this.showSuggestions = true;
+            this.hasInputBeenFocused = true;
+          }
+        });
+      }
+    });
   }
 
   startNewSession(): void {
     this.sessionId = uuidv4(); // new session id
     this.store.dispatch(ChatActions.resetChat()); // assuming you have a reset action
+    this.showSuggestions = true; // Reset suggestions only on new session
     setTimeout(() => {
       this.sendWelcomeMessage();
     }, 200);
@@ -75,18 +111,19 @@ export class ChatBotComponent {
     }
   }
 
+  handleSuggestionClick(text: string) {
+    this.sendMessageWithText(text);
+    this.showSuggestions = false;
+    this.hasInputBeenFocused = true;
+  }
+
   shouldShowRetry(text: string): boolean {
     const lowerText = text.toLowerCase();
     return lowerText.includes('sorry') || lowerText.includes('please try again later');
   }
   
-  shouldShowYesNo(text: string): boolean {
-    const lowerText = text.toLowerCase();
-    return lowerText.includes('could') || lowerText.includes('would');
-  }
-  
   sendRetry() {
-    this.sendMessageWithText('retry');
+    this.sendMessageWithText('Try Again');
   }
   
   sendMessageWithText(text: string) {
