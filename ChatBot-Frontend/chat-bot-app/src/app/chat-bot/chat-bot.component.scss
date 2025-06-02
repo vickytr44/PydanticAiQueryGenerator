@@ -1,84 +1,51 @@
 .chat-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-    background-color: #e3f2fd;
-    min-height: 100vh;
-  
-    .card {
-      width: 100%;
-      max-width: 1200px;
-      height: 85vh;
-      border: none;
-      border-radius: 16px;
-  
-      .card-header {
-        background-color: #0d47a1  !important;
-        color: #fff;
-        border-top-left-radius: 16px;
-        border-top-right-radius: 16px;
-        padding: 1rem 1.5rem;
-      }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: #e3f2fd;
+  min-height: 100vh;
+  position: relative;
 
-      .card-header button {
+  .card {
+    width: 100%;
+    max-width: 1200px;
+    height: 85vh;
+    border: none;
+    border-radius: 16px;
+
+    .card-header {
+      background-color: #0d47a1 !important;
+      color: #fff;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      padding: 1rem 1.5rem;
+
+      button {
         font-size: 1.2rem;
         padding: 0.3rem 0.5rem;
       }
+    }
 
-      .typing-indicator {
-        color: #78909c;
-        font-style: italic;
-        padding: 0.5rem 1rem;
-        margin-bottom: 1rem;
-      }
-  
-      .dot {
-        animation: blink 1s infinite;
-      }
-  
-      @keyframes blink {
-        0% { opacity: 0.2; }
-        20% { opacity: 1; }
-        100% { opacity: 0.2; }
-      }
+    .card-body {
+      height: calc(100% - 160px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1.5rem;
+      background-color: #f4faff;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
 
-      button.btn-outline-danger,
-      button.btn-outline-primary,
-      button.btn-outline-secondary {
-        font-size: 0.85rem;
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-      }
-
-      .suggestion-buttons {
-        margin-top: 0.5rem;
-        padding-left: 2.5rem; // match icon/message left margin
-      }
-
-
-      .card-body {
-        height: calc(100% - 160px);
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding: 1.5rem;
-        background-color: #f4faff;
+      .message-row {
         display: flex;
-        flex-direction: column;
-        gap: 1rem;
 
-        &::-webkit-scrollbar {
-          width: 6px;
+        &.user {
+          justify-content: flex-end;
         }
 
-        &::-webkit-scrollbar-track {
-          background-color: rgba(0, 0, 0, 0.2);
-          border-radius: 10px;
-        }
-
-        &::-webkit-scrollbar-thumb {
-          background-color: rgba(0, 0, 0, 0.2);
-          border-radius: 10px;
+        &.ai {
+          justify-content: flex-start;
         }
 
         .message-bubble {
@@ -90,56 +57,110 @@
             font-size: 1.5rem;
             margin-top: 4px;
           }
-        }
 
-        .message-row {
-            display: flex;
-        
-            &.user {
-              justify-content: flex-end;
-            }
-        
-            &.ai {
-              justify-content: flex-start;
-            }
-        
-            .message-content {
-              max-width: 90%;
-              padding: 0.75rem 1rem;
-              border-radius: 18px;
-              font-size: 1rem;
-              line-height: 1.4;
-              word-wrap: break-word;
-              overflow-wrap: break-word;
-              white-space: pre-wrap;
-              background-color: #dbeeff;
-              color: #0d47a1;
-            }
+          .message-content {
+            max-width: 90%;
+            padding: 0.75rem 1rem;
+            border-radius: 18px;
+            font-size: 1rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #dbeeff;
+            color: #0d47a1;
+          }
 
-            &.ai .message-content {
-              border-bottom-left-radius: 0;
-            }
-        
-            &.user .message-content {
-              background-color: #ffffff;
-              color: #1565c0;
-              border-bottom-right-radius: 0;
-              border: 1px solid #cce4f7;
-            }
+          &.ai .message-content {
+            border-bottom-left-radius: 0;
+          }
+
+          &.user .message-content {
+            background-color: #ffffff;
+            color: #1565c0;
+            border-bottom-right-radius: 0;
+            border: 1px solid #cce4f7;
+          }
         }
       }
 
-      .card-footer {
-        padding: 1rem 1.5rem;
-        background-color: #e3f2fd;
-        border-bottom-left-radius: 16px;
-        border-bottom-right-radius: 16px;
-      }
+      .typing-indicator {
+        color: #78909c;
+        font-style: italic;
+        padding: 0.5rem 1rem;
+        margin-bottom: 1rem;
 
-      .auto-resize {
-        overflow: hidden;
-        resize: none;
-        transition: height 0.2s ease;
+        .dot {
+          animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+          0% {
+            opacity: 0.2;
+          }
+          20% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0.2;
+          }
+        }
       }
     }
+
+    .quick-suggestions-container {
+      position: absolute;
+      bottom: 70px;
+      right: 20px;
+      background-color: #f8f9fa; /* Light Bootstrap-like background */
+      border: 1px solid #dee2e6;
+      border-radius: 12px;
+      padding: 16px;
+      z-index: 10;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 260px;
+    }
+    
+    .quick-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #343a40;
+    }
+    
+    .quick-suggestion-button {
+      width: 100%;
+      background-color: #e9f4ff;
+      color: #0d6efd;
+      border: none;
+      padding: 10px;
+      border-radius: 20px;
+      text-align: center;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .quick-suggestion-button:hover {
+      background-color: #d0e9ff;
+    }
+
+
+    .suggestion-buttons {
+        margin-top: 1rem;
+        padding-left: 0.5rem; // match icon/message left margin
+      }
+
+
+    .card-footer {
+      padding: 1rem 1.5rem;
+      background-color: #e3f2fd;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+
+    .auto-resize {
+      overflow: hidden;
+      resize: none;
+      transition: height 0.2s ease;
+    }
+  }
 }
