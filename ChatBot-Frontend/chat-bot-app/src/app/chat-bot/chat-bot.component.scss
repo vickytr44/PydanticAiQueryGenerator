@@ -109,44 +109,84 @@
 
     .quick-suggestions-container {
       position: absolute;
-      bottom: 70px;
+      bottom: 90px;
       right: 20px;
-      background-color: #f8f9fa; /* Light Bootstrap-like background */
+      background: linear-gradient(135deg, #f8f9fa 80%, #e3f2fd 100%);
       border: 1px solid #dee2e6;
-      border-radius: 12px;
+      border-radius: 18px;
       padding: 16px;
       z-index: 10;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      max-width: 260px;
+      box-shadow: 0 8px 24px rgba(13, 71, 161, 0.10), 0 1.5px 4px rgba(0,0,0,0.06);
+      animation: fadeInUp 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
     }
     
     .quick-title {
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: #343a40;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #1a237e;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &::before {
+        content: '\1F4A1'; /* lightbulb emoji */
+        font-size: 1.2rem;
+        opacity: 0.8;
+      }
     }
     
+    .quick-divider {
+      border: none;
+      border-top: 1px solid #e0e4ea;
+      margin: 0 0 12px 0;
+    }
+
     .quick-suggestion-button {
       width: 100%;
       background-color: #e9f4ff;
-      color: #0d6efd;
+      color: #0d47a1;
       border: none;
-      padding: 10px;
-      border-radius: 20px;
-      text-align: center;
-      font-size: 14px;
-      transition: background-color 0.3s ease;
+      padding: 12px 14px;
+      border-radius: 24px;
+      text-align: left;
+      font-size: 15px;
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      box-shadow: 0 1px 2px rgba(13, 71, 161, 0.04);
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
       cursor: pointer;
-    }
-    
-    .quick-suggestion-button:hover {
-      background-color: #d0e9ff;
+
+      &:hover {
+        background: linear-gradient(90deg, #d0e9ff 80%, #b3d8fd 100%);
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 4px 12px rgba(13, 71, 161, 0.10);
+      }
     }
 
 
     .suggestion-buttons {
         margin-top: 1rem;
-        padding-left: 0.5rem; // match icon/message left margin
+        padding-left: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
       }
 
 
