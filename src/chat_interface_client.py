@@ -107,7 +107,7 @@ async def chat_endpoint(request: ChatRequest):
     from pydantic_ai.messages import ModelRequest, ModelResponse, TextPart, UserPromptPart
     chat_history_manager.add_message(session_id, ModelRequest(parts=[UserPromptPart(content=request.message)]))
     chat_history_manager.add_message(session_id, ModelResponse(parts=[TextPart(content=result.data)]))
-    return {"response": result.data}
+    return {"response": str(result.data)}
 
 @app.get("/downloadexcelreport/{report_id}")
 def download_report(report_id: str):
