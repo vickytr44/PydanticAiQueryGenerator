@@ -27,6 +27,11 @@ def IsResponseEmpty(response_json: dict) -> bool:
 
     nodes = entity.get("nodes")
     edges = entity.get("edges")
+    total_count = entity.get("totalCount")
+
+    # If totalCount is present, response is not empty
+    if total_count is not None:
+        return False
 
     # Case 1: Both keys are missing
     if nodes is None and edges is None:

@@ -1,12 +1,10 @@
 import os
 from dotenv import load_dotenv
 import dspy
-from dto import ReportRequest  
-from Schema.account_schema_graphql import account_schema_graphql
-from Schema.full_chema_graphql import full_schema
-from Schema.bill_schema_graphql import bill_schema_graphql
-from Examples.report_generator_examples import extract_report_examples
-from prompt import report_request_workflow_prompt
+from src.Examples.report_generator_examples import extract_report_examples
+from src.prompt import report_request_workflow_prompt
+from src.dto import ReportRequest
+from src.Schema.full_chema_graphql import full_schema
 
 
 load_dotenv(override=True)
@@ -52,11 +50,11 @@ class ReportRequestExtractor(dspy.Module):
 
 # extractor = ReportRequestExtractor()
 
-# user_request = "get all accounts number and type along with customer name and age where customer name starts with 'v' and age is greater than 30"
+# # user_request = "get all accounts number and type along with customer name and age where customer name starts with 'v' and age is greater than 30"
 # # user_request = "get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
-
+# user_request = "How many domestic accounts are there?"
 # result = extractor(
 #     user_input= user_request,
-#     graphQl_schema= account_schema_graphql
+#     graphQl_schema= full_schema
 # )
 # print(result.report_request)

@@ -35,6 +35,7 @@ class ReportRequest(BaseModel):
     and_conditions: Optional[List[AndCondition]] = Field(default=None, description="List of AND conditions")
     related_entity_fields: Optional[List[RelatedEntity]] = Field(default=None, description="Related entities and their fields to fetch")
     sort_field_order: Optional[List[SortCondition]] = Field(default=None, description="Sort entity, field and order")
+    include_count: bool = Field(default=False,description="Whether to include the count of records fetched")
 
 class ChatRequest(BaseModel):
     message: str = Field(
