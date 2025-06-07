@@ -25,6 +25,9 @@ build/
 # Cache
 *.cache
 *.pkl
+!src/optimized_programs/*.pkl
+
+# Only add .pkl files from src/optimized_programs/ and ignore others
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
