@@ -2,8 +2,13 @@ import os
 from typing import List
 from dotenv import load_dotenv
 import dspy
+from dspy.teleprompt import BootstrapFewShot
 
-from dto import ReportRequest
+from src.Schema.full_chema_graphql import full_schema
+
+from src.Examples.error_resolver_examples import example_list
+
+from src.dto import ReportRequest
 
 
 load_dotenv(override=True)
@@ -26,6 +31,9 @@ lm = dspy.LM(
 
 dspy.settings.configure(lm=lm, trace=["Test"])
 
+def custom_exact_match(example, prediction, trace=None):
+    print("prediction",prediction, example)
+    return prediction.query.strip() == example.query.strip()
 
 class ErrorResolverSignature(dspy.Signature):
     """Resolves the validation error and generates the correct GraphQL query based on schema. Strictly adhere to the provided schema and the user request."""
@@ -49,3 +57,14 @@ class ErrorResolverModule(dspy.Module):
             validation_error=validation_error,
             initial_query=initial_query
         )
+
+if __name__ == "__main__":
+    error_resolver_model = ErrorResolverModule()
+
+    tuner = BootstrapFewShot(metric=custom_exact_match, max_labeled_demos= 5, max_rounds=3)
+
+    dataset = [dspy.Example(graphql_schema = full_schema, request=ex.input['request'], validation_error = ex.input['validation_error'],initial_query = ex.input['initial_query'], query=ex.output).with_inputs("graphql_schema","request","validation_error","initial_query") for ex in example_list]
+
+    trained_error_resolver = tuner.compile(error_resolver_model, trainset= dataset)
+
+    trained_error_resolver.save("C:\\PydanticAiReporting\\src\\optimized_programs\\error_resolver_model.pkl")

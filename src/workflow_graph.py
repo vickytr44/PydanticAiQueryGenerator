@@ -9,19 +9,14 @@ from pydantic_graph import BaseNode, End, Graph, GraphRunContext
 
 from DspyModules.ChartClarificationModule import ChartClarifier
 from DspyModules.DataAnalysisClarificationModule import DataAnalysisClarifier, perform_analysis
+from DspyModules.Helpers.LoadOptimizedPrograms import load_optimized_error_resolver_program, load_optimized_query_generator_program
 from chart_generator import generate_chart_image
-from DspyModules.ErrorResolverModule import ErrorResolverModule
 from DspyModules.JsonToExcelConverter import SchemaInferenceModule
-from DspyModules.QueryGeneratorModule import QueryGenerator, trained_query_generator
 from DspyModules.ReportRequestExtractorModule import ReportRequestExtractor
 from dto import ReportRequest
 from graphql_client import IsResponseEmpty, execute_graphql_query
-from model import model
 from Schema.full_chema_graphql import full_schema
-from Schema.bill_schema_graphql import bill_schema_graphql
 from query_validator import validate_graphql_query_for_workflow
-from DspyModules.signature_definition_using_dspy import error_resolver_model, validation_model
-from graphql.error import GraphQLError
 from datetime import datetime
 
 import logfire
@@ -73,7 +68,8 @@ class GenerateGraphQlQuery(BaseNode[State, None, str]):
     async def run(self, ctx: GraphRunContext[State]) -> validateGraphQlQuery:
 
         # query_model = QueryGenerator()
-        result = trained_query_generator(
+        query_model = load_optimized_query_generator_program()
+        result = query_model(
             graphql_schema= schema ,
             request = self.user_request
         )
@@ -104,9 +100,10 @@ class ResolveError(BaseNode[State, None, str]):
     validation_error: List[str]
 
     async def run(self, ctx: GraphRunContext[State]) -> validateGraphQlQuery:
-        error_resolver = ErrorResolverModule()
+        # error_resolver = ErrorResolverModule()
 
-        corrected_query = error_resolver(
+        optimized_error_resolver = load_optimized_error_resolver_program()
+        corrected_query = optimized_error_resolver(
             graphql_schema=schema,
             request=self.user_request,
             validation_error= self.validation_error,

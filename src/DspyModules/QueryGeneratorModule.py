@@ -81,13 +81,16 @@ class QueryGenerationSignature(dspy.Signature):
     query : str = dspy.OutputField(desc="The GraphQL query only, with no explanation or surrounding text.")
 
 
-query_model = QueryGenerator()
+if __name__ == "__main__":
+    query_model = QueryGenerator()
 
-tuner = BootstrapFewShot(metric=custom_exact_match, max_labeled_demos= 5, max_rounds=3)
+    tuner = BootstrapFewShot(metric=custom_exact_match, max_labeled_demos= 5, max_rounds=3)
 
-dataset = [dspy.Example(graphql_schema = full_schema, request=ex.input['request'], query=ex.output).with_inputs("graphql_schema","request") for ex in example_list]
+    dataset = [dspy.Example(graphql_schema = full_schema, request=ex.input['request'], query=ex.output).with_inputs("graphql_schema","request") for ex in example_list]
 
-trained_query_generator = tuner.compile(query_model, trainset= dataset)
+    trained_query_generator = tuner.compile(query_model, trainset= dataset)
+
+    trained_query_generator.save("C:\\PydanticAiReporting\\src\\optimized_programs\\query_generation_module.pkl")
 
 
 # query_model = QueryGenerator()

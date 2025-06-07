@@ -44,25 +44,21 @@ def validate_graphql_query_for_workflow(query: str, schema_str: str) -> str | No
     except GraphQLError as e:
         return [e.message]
     
+if __name__ == "__main__":
+    # Example usage
+    query = """
+            query {
+                customers([order: { age: ASC }], where: { name: { startsWith: "v" } }) {
+                    nodes {
+                    age
+                    id
+                    identityNumber
+                    name
+                    }
+                }
+            }
+    """
+    #escaped_query = query.replace("{", "{{").replace("}", "}}")
 
-# query = """
-# {
-#   bills(where: { amount: { gt: "average_bill_amount" } }) {
-#     nodes {
-#       id
-#       number
-#       month
-#       isActive
-#       status
-#       dueDate
-#       amount
-#       customerId
-#       accountId
-#     }
-#   }
-# }
-# """
-# #escaped_query = query.replace("{", "{{").replace("}", "}}")
-
-# result = validate_graphql_query_for_workflow(query, full_schema)
-# print(result)
+    result = validate_graphql_query_for_workflow(query, full_schema)
+    print(result)

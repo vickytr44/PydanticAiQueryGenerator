@@ -15,7 +15,12 @@ class ChatHistoryManager:
         self.session_timestamps[session_id] = datetime.now()
 
     def get_history(self, session_id: str) -> List[ModelMessage]:
-        self.cleanup_old_sessions()
+        # Remove all sessions except the one requested
+        sessions_to_remove = [sid for sid in self.sessions if sid != session_id]
+        for sid in sessions_to_remove:
+            del self.sessions[sid]
+            if sid in self.session_timestamps:
+                del self.session_timestamps[sid]
         return self.sessions.get(session_id, [])
 
     def cleanup_old_sessions(self) -> None:
