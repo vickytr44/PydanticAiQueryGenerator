@@ -1,10 +1,16 @@
 import os
 from dotenv import load_dotenv
 import dspy
+import logfire
 from src.Examples.report_generator_examples import extract_report_examples
 from src.prompt import report_request_workflow_prompt
 from src.dto import ReportRequest
 from src.Schema.full_chema_graphql import full_schema
+
+logfire.configure(
+    service_name="my_dspy_service",
+    send_to_logfire=True,
+)
 
 
 load_dotenv(override=True)
@@ -45,14 +51,18 @@ class ReportRequestExtractor(dspy.Module):
 
 
     def forward(self, user_input, graphQl_schema):
-        return self.extractor(user_input=user_input, graphQl_schema=graphQl_schema)
+        with logfire.span("ReportRequestExtractor"):
+            result = self.extractor(user_input=user_input, graphQl_schema=graphQl_schema)
+            logfire.info(f"Report request extractor input: {user_input}, result: {result}")
+            # Return the result of the analysis
+            return result
 
 
 # extractor = ReportRequestExtractor()
 
 # # user_request = "get all accounts number and type along with customer name and age where customer name starts with 'v' and age is greater than 30"
 # # user_request = "get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
-# user_request = "How many domestic accounts are there?"
+# user_request = "what is the total unpaid bill amount of anna"
 # result = extractor(
 #     user_input= user_request,
 #     graphQl_schema= full_schema

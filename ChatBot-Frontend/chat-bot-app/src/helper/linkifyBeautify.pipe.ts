@@ -9,6 +9,9 @@ export class LinkifyBeautifyPipe implements PipeTransform {
 
     try {
       parsedText = JSON.parse(text); // handle escaped characters
+      if (typeof parsedText !== 'string') {
+        parsedText = JSON.stringify(parsedText, null, 2); // pretty print objects
+      }
     } catch {
       parsedText = text;
     }

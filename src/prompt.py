@@ -215,15 +215,16 @@ And the user request:
 {user_input}
 
 Generate a structured ReportRequest object capturing:
-- Identify the main entity the user wants to fetch.
+- Identify the **main entity** the user wants to fetch. This is the entity **owning the key fields being queried**.
 - Identify which fields the user wants from that main entity.
 - Identify related entities and their fields requested.
 - Classify conditions into:
     - AND conditions: all must be true.
     - OR conditions: any can be true.
+    - If a filter is about a different entity include it under AND conditions with that entity as the scope.
 - Classify sort orders if mentioned (optional).
 
-Important constraints:
+**Important constraints:**
 - Do **not** use nested field names or dot notation (e.g., `relatedEntity.fieldName` is invalid).
 - Use only field names that are **directly defined** on the main entity or via valid filter objects.
 - If filtering by a related entity, use the appropriate linking field (e.g., `relatedEntityId`) or use a predefined filter object (e.g., `relatedEntity_filter`), not dot notation.

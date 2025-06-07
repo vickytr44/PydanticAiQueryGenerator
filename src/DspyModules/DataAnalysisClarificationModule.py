@@ -48,17 +48,29 @@ def perform_analysis(df, op, group_by_col=None, target_col=None):
                 return WarningText
         
         if op == "mean":
-            return df.groupby(group_by_col)[target_col].mean().reset_index().to_dict(orient="records")
+            result = df.groupby(group_by_col)[target_col].mean().reset_index().to_dict(orient="records")
+            logfire.info(f"Performing {op} on {target_col} grouped by {group_by_col}, result: {result}")
+            return result
         elif op == "sum":
-            return df.groupby(group_by_col)[target_col].sum().reset_index().to_dict(orient="records")
+            result = df.groupby(group_by_col)[target_col].sum().reset_index().to_dict(orient="records")
+            logfire.info(f"Performing {op} on {target_col} grouped by {group_by_col}, result: {result}")
+            return result
         elif op == "std":
-            return df.groupby(group_by_col)[target_col].std().reset_index().to_dict(orient="records")
+            result = df.groupby(group_by_col)[target_col].std().reset_index().to_dict(orient="records")
+            logfire.info(f"Performing {op} on {target_col} grouped by {group_by_col}, result: {result}")
+            return result
         elif op == "Variance":
-            return df.groupby(group_by_col)[target_col].var().reset_index().to_dict(orient="records")
+            result = df.groupby(group_by_col)[target_col].var().reset_index().to_dict(orient="records")
+            logfire.info(f"Performing {op} on {target_col} grouped by {group_by_col}, result: {result}")
+            return result
         elif op == "median":
-            return df.groupby(group_by_col)[target_col].median().reset_index().to_dict(orient="records")
+            result = df.groupby(group_by_col)[target_col].median().reset_index().to_dict(orient="records")
+            logfire.info(f"Performing {op} on {target_col} grouped by {group_by_col}, result: {result}")
+            return result
         elif op == "nunique":
-            return df.groupby(group_by_col)[target_col].nunique().reset_index().to_dict(orient="records")
+            result = df.groupby(group_by_col)[target_col].nunique().reset_index().to_dict(orient="records")
+            logfire.info(f"Performing {op} on {target_col} grouped by {group_by_col}, result: {result}")
+            return result
         else:
             return (f"Unsupported operation: {op}")
 
