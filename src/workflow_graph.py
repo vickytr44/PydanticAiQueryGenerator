@@ -9,10 +9,9 @@ from pydantic_graph import BaseNode, End, Graph, GraphRunContext
 
 from DspyModules.ChartClarificationModule import ChartClarifier
 from DspyModules.DataAnalysisClarificationModule import DataAnalysisClarifier, perform_analysis
-from DspyModules.Helpers.LoadOptimizedPrograms import load_optimized_error_resolver_program, load_optimized_query_generator_program
+from DspyModules.Helpers.LoadOptimizedPrograms import load_optimized_error_resolver_program, load_optimized_query_generator_program, load_optimized_report_request_extractor_program
 from chart_generator import generate_chart_image
 from DspyModules.JsonToExcelConverter import SchemaInferenceModule
-from DspyModules.ReportRequestExtractorModule import ReportRequestExtractor
 from dto import ReportRequest
 from graphql_client import IsResponseEmpty, execute_graphql_query
 from Schema.full_chema_graphql import full_schema
@@ -51,7 +50,7 @@ class ExtractReportReuest(BaseNode[State]):
 
     async def run(self, ctx: GraphRunContext[State]) -> GenerateGraphQlQuery:
 
-        extractor = ReportRequestExtractor()
+        extractor = load_optimized_report_request_extractor_program()
 
         result = extractor(
         user_input= ctx.state.input,

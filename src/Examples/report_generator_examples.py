@@ -1,14 +1,12 @@
 import dspy
 
-from src.Schema.account_schema_graphql import account_schema_graphql
-from src.Schema.bill_schema_graphql import bill_schema_graphql
 from src.Schema.full_chema_graphql import full_schema
 from src.dto import AndCondition, RelatedEntity, ReportRequest
 
 extract_report_example1 = dspy.Example(
     input={
         'user_input': "get account type and number along with customer name where amount is greater than 1000",
-        'graphQl_schema': account_schema_graphql
+        'graphQl_schema': full_schema
     },
     output=ReportRequest(
         main_entity='Account',
@@ -25,7 +23,7 @@ extract_report_example1 = dspy.Example(
 extract_report_example2 = dspy.Example(
     input={
         'user_input': "get bill amount along with customer age and account number",
-        'graphQl_schema': bill_schema_graphql        
+        'graphQl_schema': full_schema        
     },
     output=ReportRequest(
         main_entity='Bill',
@@ -43,7 +41,7 @@ extract_report_example2 = dspy.Example(
 extract_report_example3 = dspy.Example(
     input={
         'user_input': "get bill duedate along with customer id and account type",
-        'graphQl_schema': bill_schema_graphql        
+        'graphQl_schema': full_schema        
     },
     output=ReportRequest(
         main_entity='Bill',
@@ -75,4 +73,39 @@ extract_report_example4 = dspy.Example(
     )
 )
 
-extract_report_examples = [extract_report_example1, extract_report_example2, extract_report_example3, extract_report_example4]
+extract_report_example5 = dspy.Example(
+    input={
+        'user_input': "What is the total bill amount?",
+        'graphQl_schema':  full_schema       
+    },
+    output=ReportRequest(
+        main_entity='Bill',
+        fields_to_fetch_from_main_entity=["amount"],
+        or_conditions= None,
+        and_conditions= None,
+        related_entity_fields=[],
+        sort_field_order=None
+    )
+)
+
+extract_report_example6 = dspy.Example(
+    input={
+        'user_input': "What is the total bill amount for commercial account?",
+        'graphQl_schema':  full_schema       
+    },
+    output=ReportRequest(
+        main_entity='Bill',
+        fields_to_fetch_from_main_entity=["amount"],
+        or_conditions= None,
+        and_conditions= [
+            AndCondition(entity="Account", field="type", operation="eq", value="COMMERCIAL")
+        ],
+        related_entity_fields=[],
+        sort_field_order=None,
+        include_count=False
+    )
+)
+
+
+
+extract_report_examples = [extract_report_example1, extract_report_example2, extract_report_example3, extract_report_example4, extract_report_example5]
