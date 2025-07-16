@@ -20,6 +20,7 @@ from query_validator import validate_graphql_query_for_workflow
 from datetime import datetime
 
 import logfire
+from IPython.display import Image, display
 
 logfire.configure()
 logfire.instrument_pydantic_ai()
@@ -37,14 +38,6 @@ class State:
     should_report_be_created: bool = field(default=False)
     should_chart_be_created: bool = field(default=False)
     aggregate_operation: Literal["sum", "mean", "std", "variance", "median", "nunique"] = field(default=None)
-
-@dataclass
-class AssignEntitySchema(BaseNode[State]):
-
-    async def run(self, ctx: GraphRunContext[State]) -> ExtractReportReuest:
-
-        ctx.state.schema = schema
-        return ExtractReportReuest()
 
 @dataclass
 class ExtractReportReuest(BaseNode[State]):
@@ -120,7 +113,7 @@ class ResolveError(BaseNode[State, None, str]):
 class ExecuteGraphQlQuery(BaseNode[State, None, str]):
     query_to_execute: str
 
-    async def run(self, ctx: GraphRunContext[State]) -> GenerateExcelReport | GenerateChart | PerformAggregation | End[str]:
+    async def run(self, ctx: GraphRunContext[State]) -> End[str]:
 
         result = execute_graphql_query(self.query_to_execute)
         if 'errors' in result:
@@ -128,101 +121,20 @@ class ExecuteGraphQlQuery(BaseNode[State, None, str]):
         is_response_empty = IsResponseEmpty(result)
         if is_response_empty:
             return End("No data found for the given query.")
-        if not ctx.state.should_report_be_created and not ctx.state.should_chart_be_created:
-            if ctx.state.aggregate_operation is not None:
-                return PerformAggregation(data_as_json=result)
-            return End(result)
-        
-        if ctx.state.should_chart_be_created:
-            return GenerateChart(data_as_json=result)
-        
-        return GenerateExcelReport(result)
+
+        return End(result)      
     
 
-@dataclass
-class GenerateChart(BaseNode[State, None, str]):
-    data_as_json: Any
+query_generation_graph = Graph(nodes=(ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery))
 
-    async def run(self, ctx: GraphRunContext[State]) -> End[str]:
+# Option 1: Display as image in Jupyter notebook
+display(Image(query_generation_graph.mermaid_code(start_node=ExtractReportReuest)))
 
-        schema_module = SchemaInferenceModule()
-        # Call the module
-        result = schema_module.forward(raw_json=self.data_as_json)
+# Option 2: Print the raw Mermaid code
+print("Mermaid Code:")
+mermaid_code = query_generation_graph.mermaid_code(start_node=ExtractReportReuest)
+print(mermaid_code)
 
-        excel_buffer = io.BytesIO(result["binary_output"])
-        df = pd.read_excel(excel_buffer)
-
-        chart_clarifier = ChartClarifier()
-
-        chart_clarifier_result = chart_clarifier(ctx.state.input, df)
-
-        if chart_clarifier_result.needs_clarification == True:
-            return End({"clarification_needed": True, "question": chart_clarifier_result.clarification_question})
-
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-
-        # Call general-purpose chart function
-        filename = generate_chart_image(
-            data=df,
-            x_col=chart_clarifier_result.x_col,
-            y_col=chart_clarifier_result.y_col,
-            chart_type=chart_clarifier_result.chart_type,
-            filename=f"chart_{timestamp}"
-        )
-        
-        return End(f"File has been generated successfully. Your chart is ready! Download it here: http://localhost:8080/downloadchartpdf/{filename}")
-    
-@dataclass
-class GenerateExcelReport(BaseNode[State, None, str]):
-    data_as_json: Any
-
-    async def run(self, ctx: GraphRunContext[State]) -> End[str]:
-
-        schema_module = SchemaInferenceModule()
-        # Call the module
-        result = schema_module.forward(raw_json=self.data_as_json)
-
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-
-        # Save Excel
-        with open(f"C:\\PydanticAiReporting\\FileStorage\\report_{timestamp}.xlsx", "wb") as f:
-            f.write(result["binary_output"])
-        
-        return End(f"File has been generated successfully. Your Excel report is ready! Download it here: http://localhost:8080/downloadexcelreport/report_{timestamp}")
-
-@dataclass
-class PerformAggregation(BaseNode[State, None, str]):
-    data_as_json: Any
-
-    async def run(self, ctx: GraphRunContext[State]) -> End[str]:
-
-        schema_module = SchemaInferenceModule()
-        # Call the module
-        result = schema_module.forward(raw_json=self.data_as_json)
-
-        excel_buffer = io.BytesIO(result["binary_output"])
-        df = pd.read_excel(excel_buffer)
-
-        clarifier = DataAnalysisClarifier()
-        result = clarifier(ctx.state.input, df)
-
-
-        if result.needs_clarification == True:
-            return({"clarification_needed": True, "question": result.clarification_question})
-
-        output_df = perform_analysis(df, result.operation, result.group_by_col, result.target_col)
-        return End(output_df) 
-    
-
-# async def main():
-#     while True:
-#         # input="get bill amount, duedate, number and month along with customer name and account type where amount is greater than 1000 and customer name starts with 'v' or account type is domestic"
-#         query = input("You: ")
-#         if query.lower() == "exit":
-#             break
-#         state = State(query)
-#         query_generation_graph = Graph(nodes=( AssignEntitySchema, ExtractReportReuest, GenerateGraphQlQuery, validateGraphQlQuery, ResolveError, ExecuteGraphQlQuery, GenerateExcelReport, PerformAggregation))
-#         result = await query_generation_graph.run(AssignEntitySchema(), state=state)
-#         print("Ai:",result.output)
-
-# asyncio.run(main())
+# Option 3: Save to file
+with open("workflow_diagram.mmd", "w") as f:
+    f.write(mermaid_code)

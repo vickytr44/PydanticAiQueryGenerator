@@ -4,7 +4,6 @@ from DspyModules.ErrorResolverModule import ErrorResolverModule
 from DspyModules.QueryGeneratorModule import QueryGenerator
 from DspyModules.ReportRequestExtractorModule import ReportRequestExtractor
 
-
 def load_optimized_error_resolver_program() -> ErrorResolverModule:
     """
     Load optimized programs from the 'OptimizedPrograms' directory.

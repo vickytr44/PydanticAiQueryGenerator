@@ -1,0 +1,11 @@
+---
+title: query_generation_graph
+---
+stateDiagram-v2
+  [*] --> ExtractReportReuest
+  ExtractReportReuest --> GenerateGraphQlQuery
+  GenerateGraphQlQuery --> validateGraphQlQuery
+  validateGraphQlQuery --> ExecuteGraphQlQuery
+  validateGraphQlQuery --> ResolveError
+  ResolveError --> validateGraphQlQuery
+  ExecuteGraphQlQuery --> [*]

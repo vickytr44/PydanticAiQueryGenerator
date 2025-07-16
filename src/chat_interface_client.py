@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 from pydantic_ai import Agent
 from pydantic_graph import Graph
 from DspyModules.UserRequestAnalyserModule import AnalyzeUserRequestModule
-from dto import ChatRequest, ChatResponse
+from dto import ChatRequest, ChatResponse, userInput
 from model import model
 from pydantic_ai.mcp import MCPServerHTTP
 from prompt import chat_interface_prompt
@@ -33,14 +33,16 @@ chat_interface_agent = Agent(model, system_prompt= chat_interface_prompt, model_
     "temperature": 0.3, "timeout": 30, "top_p": 0.9
 }, mcp_servers=[server])
 
-@chat_interface_agent.tool_plain(name="process_data_request", require_parameter_descriptions= True, docstring_format="google" , retries= 2)
-def process_data_request(user_input: str) -> str:
+@chat_interface_agent.tool_plain(name="process_data_request", require_parameter_descriptions= True, docstring_format="google" )
+def process_data_request(user_input: userInput) -> str:
     """
     Processes a consolidated user request in plain English. The input should include all details provided by the user, such as requested data, filters, and whether the user wants to generate a report, a chart, or simply retrieve data. The function analyzes the request and determines the appropriate workflow.
 
     Args:
         user_input: A plain English statement fully describing the user's request, including any instructions to generate a report, chart, or just fetch data.
     """
+
+    user_input = user_input.user_input.strip()
     analyzer_module = AnalyzeUserRequestModule()
     result = analyzer_module(input=user_input)
 

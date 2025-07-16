@@ -1,7 +1,7 @@
 import dspy
 
 from src.Schema.full_chema_graphql import full_schema
-from src.dto import AndCondition, RelatedEntity, ReportRequest
+from src.dto import AndCondition, OrCondition, RelatedEntity, ReportRequest
 
 extract_report_example1 = dspy.Example(
     input={
@@ -96,16 +96,76 @@ extract_report_example6 = dspy.Example(
     output=ReportRequest(
         main_entity='Bill',
         fields_to_fetch_from_main_entity=["amount"],
-        or_conditions= None,
-        and_conditions= [
+        or_conditions=None,
+        and_conditions=[
             AndCondition(entity="Account", field="type", operation="eq", value="COMMERCIAL")
         ],
         related_entity_fields=[],
         sort_field_order=None,
         include_count=False
-    )
+    ),
+    reasoning="The query asks for the 'amount' field from the 'Bill' entity. It includes a filter on the related 'Account' entity, where 'type' equals 'COMMERCIAL'. This filter ensures only bills associated with commercial accounts are included."
+)
+
+extract_report_example7 = dspy.Example(
+    input={
+        'user_input': "Create a chart bill amount and due date where the account type is commercial and customer age is greater than 40.",
+        'graphQl_schema': full_schema
+    },
+    output=ReportRequest(
+        main_entity='Bill',
+        fields_to_fetch_from_main_entity=['amount', 'dueDate'],
+        or_conditions=None,
+        and_conditions=[
+            AndCondition(entity='Account', field='type', operation='eq', value='COMMERCIAL'),
+            AndCondition(entity='Customer', field='age', operation='gt', value=40)
+        ],
+        related_entity_fields=[],
+        sort_field_order=None,
+        include_count=False
+    ),
+    reasoning="The query asks for 'amount' and 'dueDate' fields from the 'Bill' entity. It applies two filters: one on the related 'Account' entity where 'type' equals 'COMMERCIAL', and another on the related 'Customer' entity where 'age' is greater than 40. Both conditions must be true for a bill to be included."
+)
+
+extract_report_example8 = dspy.Example(
+    input={
+        'user_input': "Get bills where either the account type is commercial or the customer name is don.",
+        'graphQl_schema': full_schema
+    },
+    output=ReportRequest(
+        main_entity='Bill',
+        fields_to_fetch_from_main_entity=['id', 'amount', 'month'],
+        or_conditions=[
+            OrCondition(entity='Account', field='type', operation='eq', value='COMMERCIAL'),
+            OrCondition(entity='Customer', field='name', operation='eq', value='don')
+        ],
+        and_conditions=None,
+        related_entity_fields=[],
+        sort_field_order=None,
+        include_count=False
+    ),
+        reasoning="The query asks for 'id', 'amount', and 'month' fields from the 'Bill' entity. It uses two alternative filters: one on the related 'Account' entity where 'type' equals 'COMMERCIAL', and one on the related 'Customer' entity where 'name' equals 'don'. A bill is included if either condition is satisfied."
+)
+
+extract_report_example9 = dspy.Example(
+    input={
+        'user_input': "Get id and number of accounts that are of type domestic and are owned by customer virat.",
+        'graphQl_schema': full_schema
+    },
+    output=ReportRequest(
+        main_entity='Account',
+        fields_to_fetch_from_main_entity=['id', 'number'],
+        or_conditions=None,
+        and_conditions=[
+            AndCondition(entity='Account', field='type', operation='eq', value='DOMESTIC'),
+            AndCondition(entity='Customer', field='name', operation='eq', value='virat')
+        ],
+        related_entity_fields=[],
+        sort_field_order=None,
+        include_count=False
+    ),
+    reasoning = "The query asks for the id and number fields from the Account entity. It also applies two filters: one on the Account entity (type equals 'DOMESTIC') and one on the related Customer entity (name equals 'Virat'). Both filters must be applied together to retrieve the correct accounts."
 )
 
 
-
-extract_report_examples = [extract_report_example1, extract_report_example2, extract_report_example3, extract_report_example4, extract_report_example5]
+extract_report_examples = [extract_report_example1, extract_report_example2, extract_report_example3, extract_report_example4, extract_report_example5, extract_report_example7, extract_report_example8, extract_report_example9]

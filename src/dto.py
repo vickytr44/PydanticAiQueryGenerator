@@ -53,3 +53,8 @@ class ChatResponse(BaseModel):
         description="The AI assistant's response",
         example="I have generated a report based on the sales data..."
     )
+
+class userInput(BaseModel):
+    user_input: str = Field(
+        description="A plain English statement fully describing the user's request, including any instructions to generate a report, chart, or just fetch data."
+    )

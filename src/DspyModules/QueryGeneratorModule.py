@@ -93,42 +93,43 @@ if __name__ == "__main__":
     trained_query_generator.save("C:\\PydanticAiReporting\\src\\optimized_programs\\query_generation_module.pkl")
 
 
-# query_model = QueryGenerator()
+    # query_model = QueryGenerator()
 
-# # report_request = ReportRequest(
-# #     main_entity='Bill',
-# #     fields_to_fetch_from_main_entity=['amount', 'dueDate', 'number', 'month'],
-# #     or_conditions=[
-# #         OrCondition(entity='Customer', field='name', operation='startsWith', value='v'),
-# #         OrCondition(entity='Account', field='type', operation='eq', value='DOMESTIC')
-# #     ],
-# #     and_conditions=[
-# #         AndCondition(entity='Bill', field='amount', operation='gt', value=500)
-# #     ],
-# #     related_entity_fields=[
-# #         RelatedEntity(entity='Customer', fields=['name'])
-# #     ],
-# #     sort_field_order=None
-# # )
-
-# report_request2 =ReportRequest (
+# report_request = ReportRequest(
 #     main_entity='Bill',
-#     fields_to_fetch_from_main_entity=['amount'],
-#     or_conditions=None,
-#     and_conditions=None,
-#     related_entity_fields=None,
-#     sort_field_order=[
-#         SortCondition(
-#             entity='Bill',
-#             field='amount',
-#             order='DESC',
-#         ),
+#     fields_to_fetch_from_main_entity=['amount', 'dueDate', 'number', 'month'],
+#     or_conditions=[
+#         OrCondition(entity='Customer', field='name', operation='startsWith', value='v'),
+#         OrCondition(entity='Account', field='type', operation='eq', value='DOMESTIC')
 #     ],
+#     and_conditions=[
+#         AndCondition(entity='Bill', field='amount', operation='gt', value=500)
+#     ],
+#     related_entity_fields=[
+#         RelatedEntity(entity='Customer', fields=['name'])
+#     ],
+#     sort_field_order=None
 # )
+
+# report_request2 =ReportRequest(
+#     main_entity='Bill',
+#     fields_to_fetch_from_main_entity=['month', 'amount'],
+#     or_conditions=None,
+#     and_conditions=[
+#         AndCondition(entity='account', field='type', operation='eq', value='COMMERCIAL'),
+#         AndCondition(entity='account', field='customer.name', operation='eq', value='John')
+#     ],
+#     related_entity_fields=[
+#         RelatedEntity(entity='account', fields=['type', 'customer'])
+#     ],
+#     sort_field_order=None,
+#     include_count=False
+# )
+
 
 # result = query_model(
 #     graphql_schema= full_schema ,
 #     request = report_request2
 # )
 
-# print(result.query)
+# print(result.query) 
