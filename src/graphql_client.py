@@ -51,7 +51,6 @@ def IsResponseEmpty(response_json: dict) -> bool:
     return False
 
 
-
 def execute_graphql_query(query: str):
     try:
         with logfire.span("perform_analysis"):  # Add tracing span            
