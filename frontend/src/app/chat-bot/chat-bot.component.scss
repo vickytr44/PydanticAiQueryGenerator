@@ -64,10 +64,10 @@
             border-radius: 18px;
             font-size: 1rem;
             line-height: 1.4;
-            white-space: pre-wrap;
             word-wrap: break-word;
             background-color: #dbeeff;
             color: #0d47a1;
+            margin-bottom: 0 !important;
           }
 
           &.ai .message-content {
