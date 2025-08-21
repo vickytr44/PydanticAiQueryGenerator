@@ -24,7 +24,7 @@ export class ChatBotComponent {
   bootstrap: any;
 
   readonly suggestions: string[] = [
-    'Retrieve the fields and related tables for all the available tables as csv.',
+    'Get me the available tables along with its fields and related entities.',
     'Generate a report for all account records.',
     'Visualize monthly bill amounts using a bar chart.'
   ];

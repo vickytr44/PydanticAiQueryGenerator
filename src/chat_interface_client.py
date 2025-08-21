@@ -36,10 +36,10 @@ chat_interface_agent = Agent(model, system_prompt= chat_interface_prompt, model_
 @chat_interface_agent.tool_plain(name="process_data_request", require_parameter_descriptions= True, docstring_format="google" )
 def process_data_request(user_input: userInput) -> str:
     """
-    Processes a consolidated user request in plain English. The input should include all details provided by the user, such as requested data, filters, and whether the user wants to generate a report, a chart, or simply retrieve data. The function analyzes the request and determines the appropriate workflow.
+    Processes a consolidated user request in plain English. The input should include all details provided by the user, such as requested data, filters, and whether the user wants to generate a excel report, a chart, or simply retrieve data. The function analyzes the request and determines the appropriate workflow.
 
     Args:
-        user_input: A plain English statement fully describing the user's request, including any instructions to generate a report, chart, or just fetch data.
+        user_input: A plain English statement fully describing the user's request, including any instructions to generate a excel report, chart, or just fetch data.
     """
 
     user_input = user_input.user_input.strip()
