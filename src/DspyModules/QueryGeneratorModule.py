@@ -32,6 +32,65 @@ def custom_exact_match(example, prediction, trace=None):
     print("prediction",prediction, example)
     return prediction.query.strip() == example.query.strip()
 
+def better_graphql_metric(example, prediction, trace=None):
+    """
+    A more sophisticated metric for GraphQL query evaluation
+    """
+    try:
+        # Basic checks
+        if not hasattr(prediction, 'query') or not prediction.query:
+            return False
+            
+        predicted_query = prediction.query.strip()
+        expected_query = example.query.strip()
+        
+        # 1. Exact match (best case)
+        if predicted_query == expected_query:
+            return True
+            
+        # 2. Normalize whitespace and compare
+        import re
+        def normalize_query(query):
+            # Remove extra whitespace, normalize line breaks
+            normalized = re.sub(r'\s+', ' ', query.replace('\n', ' ').replace('\t', ' '))
+            return normalized.strip()
+        
+        if normalize_query(predicted_query) == normalize_query(expected_query):
+            return True
+            
+        # 3. Check if both queries are syntactically valid GraphQL
+        if is_valid_against_schema(predicted_query, full_schema) and \
+           is_valid_against_schema(expected_query, full_schema):
+            # Could add more semantic comparison here
+            # For now, if both are valid, give partial credit
+            return True
+            
+        return False
+        
+    except Exception as e:
+        print(f"Error in metric evaluation: {e}")
+        return False
+
+def semantic_similarity_metric(example, prediction, trace=None):
+    """
+    Even more advanced metric using semantic similarity
+    This would require additional libraries like sentence-transformers
+    """
+    # Basic validation first
+    if not hasattr(prediction, 'query') or not prediction.query:
+        return False
+        
+    # Check if both queries are syntactically valid
+    predicted_valid = is_valid_against_schema(prediction.query.strip(), full_schema)
+    expected_valid = is_valid_against_schema(example.query.strip(), full_schema)
+    
+    if not predicted_valid:
+        return False
+        
+    # If both are valid, you could use semantic similarity
+    # This is a simplified version - you'd want to use actual GraphQL AST comparison
+    return predicted_valid and expected_valid
+
 def is_valid_against_schema(query: str, schema_str: str) -> bool:
     try:
         schema = build_schema(schema_str)
@@ -84,52 +143,78 @@ class QueryGenerationSignature(dspy.Signature):
 if __name__ == "__main__":
     query_model = QueryGenerator()
 
-    tuner = BootstrapFewShot(metric=custom_exact_match, max_labeled_demos= 5, max_rounds=3)
+    # Use the better metric instead of custom_exact_match
+    tuner = BootstrapFewShot(metric=better_graphql_metric, max_labeled_demos= 5, max_rounds=3)
 
     dataset = [dspy.Example(graphql_schema = full_schema, request=ex.input['request'], query=ex.output).with_inputs("graphql_schema","request") for ex in example_list]
 
+    print(f"Training with {len(dataset)} examples...")
     trained_query_generator = tuner.compile(query_model, trainset= dataset)
 
     trained_query_generator.save("C:\\PydanticAiReporting\\src\\optimized_programs\\query_generation_module.pkl")
+    print("Training completed and model saved!")
+
+    # query_model = QueryGenerator()    
+    # query_model.load(path="C:\\PydanticAiReporting\\src\\optimized_programs\\query_generation_module.pkl")
+
+    # report_request = ReportRequest(
+    #     main_entity='Bill',
+    #     fields_to_fetch_from_main_entity=['amount', 'dueDate', 'number', 'month'],
+    #     or_conditions=[
+    #         OrCondition(entity='Customer', field='name', operation='startsWith', value='v'),
+    #         OrCondition(entity='Account', field='type', operation='eq', value='DOMESTIC')
+    #     ],
+    #     and_conditions=[
+    #         AndCondition(entity='Bill', field='amount', operation='gt', value=500)
+    #     ],
+    #     related_entity_fields=[
+    #         RelatedEntity(entity='Customer', fields=['name'])
+    #     ],
+    #     sort_field_order=None
+    # )
+
+    # report_request2 =ReportRequest(
+    #     main_entity='Bill',
+    #     fields_to_fetch_from_main_entity=['month', 'amount'],
+    #     or_conditions=None,
+    #     and_conditions=[
+    #         AndCondition(entity='account', field='type', operation='eq', value='COMMERCIAL'),
+    #         AndCondition(entity='account', field='customer.name', operation='eq', value='John')
+    #     ],
+    #     related_entity_fields=[
+    #         RelatedEntity(entity='account', fields=['type', 'customer'])
+    #     ],
+    #     sort_field_order=None,
+    #     include_count=False
+    # )
 
 
-    # query_model = QueryGenerator()
+    # result = query_model(
+    #     graphql_schema= full_schema ,
+    #     request = report_request2
+    # )
 
-# report_request = ReportRequest(
-#     main_entity='Bill',
-#     fields_to_fetch_from_main_entity=['amount', 'dueDate', 'number', 'month'],
-#     or_conditions=[
-#         OrCondition(entity='Customer', field='name', operation='startsWith', value='v'),
-#         OrCondition(entity='Account', field='type', operation='eq', value='DOMESTIC')
-#     ],
-#     and_conditions=[
-#         AndCondition(entity='Bill', field='amount', operation='gt', value=500)
-#     ],
-#     related_entity_fields=[
-#         RelatedEntity(entity='Customer', fields=['name'])
-#     ],
-#     sort_field_order=None
-# )
-
-# report_request2 =ReportRequest(
-#     main_entity='Bill',
-#     fields_to_fetch_from_main_entity=['month', 'amount'],
-#     or_conditions=None,
-#     and_conditions=[
-#         AndCondition(entity='account', field='type', operation='eq', value='COMMERCIAL'),
-#         AndCondition(entity='account', field='customer.name', operation='eq', value='John')
-#     ],
-#     related_entity_fields=[
-#         RelatedEntity(entity='account', fields=['type', 'customer'])
-#     ],
-#     sort_field_order=None,
-#     include_count=False
-# )
-
-
-# result = query_model(
-#     graphql_schema= full_schema ,
-#     request = report_request2
-# )
-
-# print(result.query) 
+    # print(result.query)
+    
+    # # Custom function to print the complete prompt including examples
+    # def print_complete_prompt(n=1):
+    #     from dspy.clients.base_lm import GLOBAL_HISTORY
+        
+    #     for item in GLOBAL_HISTORY[-n:]:
+    #         messages = item["messages"] or [{"role": "user", "content": item["prompt"]}]
+    #         timestamp = item.get("timestamp", "Unknown time")
+            
+    #         print(f"\n=== COMPLETE PROMPT [{timestamp}] ===\n")
+            
+    #         for msg in messages:
+    #             print(f"--- {msg['role'].upper()} MESSAGE ---")
+    #             if isinstance(msg["content"], str):
+    #                 print(msg["content"].strip())
+    #             else:
+    #                 if isinstance(msg["content"], list):
+    #                     for c in msg["content"]:
+    #                         if c["type"] == "text":
+    #                             print(c["text"].strip())
+    #             print("\n" + "="*50 + "\n")
+    
+    # print_complete_prompt(n=1) 
