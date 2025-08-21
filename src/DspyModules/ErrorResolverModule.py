@@ -10,6 +10,8 @@ from src.Examples.error_resolver_examples import example_list
 
 from src.dto import ReportRequest
 
+from graphql import parse, validate, build_schema
+
 
 load_dotenv(override=True)
 
@@ -31,10 +33,79 @@ lm = dspy.LM(
 
 dspy.settings.configure(lm=lm, trace=["Test"])
 
+
 def custom_exact_match(example, prediction, trace=None):
     print("prediction",prediction, example)
     return prediction.query.strip() == example.query.strip()
 
+def better_graphql_metric(example, prediction, trace=None):
+    """
+    A more sophisticated metric for GraphQL query evaluation
+    """
+    try:
+        # Basic checks
+        if not hasattr(prediction, 'query') or not prediction.query:
+            return False
+            
+        predicted_query = prediction.query.strip()
+        expected_query = example.query.strip()
+        
+        # 1. Exact match (best case)
+        if predicted_query == expected_query:
+            return True
+            
+        # 2. Normalize whitespace and compare
+        import re
+        def normalize_query(query):
+            # Remove extra whitespace, normalize line breaks
+            normalized = re.sub(r'\s+', ' ', query.replace('\n', ' ').replace('\t', ' '))
+            return normalized.strip()
+        
+        if normalize_query(predicted_query) == normalize_query(expected_query):
+            return True
+            
+        # 3. Check if both queries are syntactically valid GraphQL
+        if is_valid_against_schema(predicted_query, full_schema) and \
+           is_valid_against_schema(expected_query, full_schema):
+            # Could add more semantic comparison here
+            # For now, if both are valid, give partial credit
+            return True
+            
+        return False
+        
+    except Exception as e:
+        print(f"Error in metric evaluation: {e}")
+        return False
+
+def semantic_similarity_metric(example, prediction, trace=None):
+    """
+    Even more advanced metric using semantic similarity
+    This would require additional libraries like sentence-transformers
+    """
+    # Basic validation first
+    if not hasattr(prediction, 'query') or not prediction.query:
+        return False
+        
+    # Check if both queries are syntactically valid
+    predicted_valid = is_valid_against_schema(prediction.query.strip(), full_schema)
+    expected_valid = is_valid_against_schema(example.query.strip(), full_schema)
+    
+    if not predicted_valid:
+        return False
+        
+    # If both are valid, you could use semantic similarity
+    # This is a simplified version - you'd want to use actual GraphQL AST comparison
+    return predicted_valid and expected_valid
+
+def is_valid_against_schema(query: str, schema_str: str) -> bool:
+    try:
+        schema = build_schema(schema_str)
+        document = parse(query)
+        errors = validate(schema, document)
+        return not errors
+    except Exception:
+        return False
+    
 class ErrorResolverSignature(dspy.Signature):
     """Resolves the validation error and generates the correct GraphQL query based on schema. Strictly adhere to the provided schema and the user request."""
     graphql_schema = dspy.InputField(desc="GraphQL schema definition")
@@ -61,10 +132,12 @@ class ErrorResolverModule(dspy.Module):
 if __name__ == "__main__":
     error_resolver_model = ErrorResolverModule()
 
-    tuner = BootstrapFewShot(metric=custom_exact_match, max_labeled_demos= 5, max_rounds=3)
+    tuner = BootstrapFewShot(metric=better_graphql_metric, max_labeled_demos= 5, max_rounds=3)
 
     dataset = [dspy.Example(graphql_schema = full_schema, request=ex.input['request'], validation_error = ex.input['validation_error'],initial_query = ex.input['initial_query'], query=ex.output).with_inputs("graphql_schema","request","validation_error","initial_query") for ex in example_list]
 
+    print(f"Training with {len(dataset)} examples...")
     trained_error_resolver = tuner.compile(error_resolver_model, trainset= dataset)
 
     trained_error_resolver.save("C:\\PydanticAiReporting\\src\\optimized_programs\\error_resolver_model.pkl")
+    print("Error resolver model saved successfully.")
